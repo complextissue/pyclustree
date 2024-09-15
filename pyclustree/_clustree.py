@@ -25,6 +25,7 @@ def clustree(
     y_spacing: float = 1.25,
     order_clusters: bool = True,
     show_colorbar: bool = False,
+    show_fraction: bool = False,
     show_cluster_keys: bool = True,
     graph_plot_kwargs: Optional[dict] = None,
 ) -> plt.Figure:
@@ -77,6 +78,8 @@ def clustree(
         y_spacing (float, optional): The vertical spacing between nodes. Defaults to 1.25.
         order_clusters (bool, optional): Whether to order the clusters based on the transition matrix. Defaults to True.
         show_colorbar (bool, optional): Whether to show the colorbar. Defaults to False.
+        show_fraction (bool, optional): Whether to show the fraction of cells from the parent cluster that transitioned
+            to the child cluster. Defaults to False.
         show_cluster_keys (bool, optional): Whether to show the cluster keys on the left side of the plot.
             Defaults to True.
         graph_plot_kwargs (Optional[dict], optional): Additional keyword arguments to pass to `nx.draw`. Will override
@@ -261,7 +264,7 @@ def clustree(
         "edge_cmap": plt.cm.Greys,
         "edge_vmin": 0,
         "edge_vmax": 1,
-        "arrowsize": 20,
+        "arrowsize": 10,
         "ax": ax,
         "connectionstyle": "arc3,rad=0.05",
     }
@@ -272,6 +275,15 @@ def clustree(
     nx.draw(
         **graph_plot_kwargs_base,
     )
+
+    # Add the edge labels
+    if show_fraction:
+        edge_labels = nx.get_edge_attributes(G, "weight")
+        formatted_edge_labels = {}
+        for edge_label in zip(edge_labels.keys(), edge_labels.values()):
+            formatted_edge_labels[edge_label[0]] = f"{np.round(edge_label[1], 2)}"
+
+        nx.draw_networkx_edge_labels(G, node_positions, edge_labels=formatted_edge_labels, font_size=6)
 
     # Plot the colorbar
     if show_colorbar:
