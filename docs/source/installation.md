@@ -10,13 +10,28 @@
 
 Choose an option to install this package.
 
-:::
+::::{tab-set}
 
 :::{tab-item} PyPi
 Install `pyclustree` package using `pip`:
 
 ```bash
-python3 -m pip install pyclustree
+pip install pyclustree
+```
+
+:::
+
+:::{tab-item} Source
+Install `pyclustree` from source:
+
+```bash
+# Clone repo
+git clone --depth 1 https://github.com/complextissue/pyclustree.git
+cd pyclustree
+pyenv global 3.9
+make create-venv
+source .venv/bin/activate
+make install
 ```
 
 :::
