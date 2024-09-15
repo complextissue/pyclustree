@@ -194,7 +194,6 @@ def clustree(
             )
 
         gene_cluster_means_flat = [item for sublist in gene_cluster_means for item in sublist]
-        print(gene_cluster_means_flat, len(gene_cluster_means_flat))
 
         gene_min, gene_max = np.min(gene_cluster_means_flat), np.max(gene_cluster_means_flat)
         norm_gene = plt.Normalize(vmin=gene_min, vmax=gene_max)
