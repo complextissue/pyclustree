@@ -6,13 +6,14 @@ from anndata import AnnData
 from matplotlib import pyplot as plt
 from matplotlib.colors import Colormap
 
-from ._utils import calculate_transition_matrix, get_centered_positions
+from ._utils import calculate_transition_matrix, get_centered_positions, order_unique_clusters
 
 
 def clustree(
     adata: AnnData,
     cluster_keys: list[str],
     title: Optional[str] = None,
+    scatter_reference: Optional[str] = None,
     node_colormap: Union[Colormap, str] = "tab20",
     node_color_gene: Optional[str] = None,
     node_color_gene_use_raw: bool = True,
@@ -57,6 +58,8 @@ def clustree(
         cluster_keys (list[str]): The list of cluster keys to visualize, in hierarchical order. Keys should be present
             in `adata.obs`.
         title (str, optional): The title of the plot. Defaults to None.
+        scatter_reference (str, optional): The key in `adata.obsm` to use as a reference for the scatter plot. If None,
+            the nodes will be placed in a hierarchical tree. Defaults to None.
         node_colormap (Union[Colormap, str], optional): The colormap to use for coloring the nodes. Defaults to "tab20".
         node_color_gene (str, optional): The gene to use for coloring the nodes. If provided, node colors will be based
             on the expression of this gene. If None, node colors will be based on the cluster key/level.
@@ -80,12 +83,19 @@ def clustree(
             the default arguments. Defaults to None.
 
     Returns:
-        plt.Figure: _description_
+        plt.Figure: The matplotlib figure object of the clustree visualization.
     """
     # Ensure all cluster keys are present in adata.obs
     assert all(key in adata.obs for key in cluster_keys), "All cluster keys should be present in adata.obs."
 
+    assert (
+        scatter_reference is None or scatter_reference in adata.obsm
+    ), "The provided scatter reference is not valid. It should be present in adata.obsm."
+
     if node_color_gene is not None:
+        if scatter_reference is not None:
+            raise ValueError("Currently, you cannot provide both a scatter reference and a node color gene.")
+
         if node_color_gene_use_raw:
             assert (
                 node_color_gene in adata.raw.var_names
@@ -108,22 +118,7 @@ def clustree(
     unique_clusters = [np.unique(df_cluster_assignments[key]).tolist() for key in cluster_keys]
 
     if order_clusters:
-        ordered_clusters = [unique_clusters[0]]
-
-        for i, transition_matrix in enumerate(transition_matrices):
-            ordered_child_clusters = []
-
-            for parent_cluster in ordered_clusters[i]:
-                # Find the child clusters where the argmax of the transition matrix is the parent cluster
-                child_clusters = np.array(unique_clusters[i + 1])[
-                    (transition_matrix.idxmax(axis=0).values == parent_cluster)
-                ]
-                for child_cluster in child_clusters:
-                    ordered_child_clusters.append(child_cluster)
-
-            ordered_clusters.append(ordered_child_clusters)
-
-        unique_clusters = ordered_clusters
+        unique_clusters = order_unique_clusters(unique_clusters, transition_matrices)
 
     # Create the Graph
     G = nx.DiGraph()
@@ -153,14 +148,37 @@ def clustree(
     # Calculate the positions of the nodes
     node_positions = {}
     for i in range(len(cluster_keys)):
-        node_positions.update(
-            get_centered_positions(
-                nodes=node_names[i],
-                level=i,
-                y_spacing=y_spacing,
-                x_spacing=x_spacing,
+        if scatter_reference is not None:
+            # Get the median x and y positions of the scatter reference for each cluster
+            x_positions = adata.obsm[scatter_reference][:, 0]
+            y_positions = adata.obsm[scatter_reference][:, 1]
+
+            cluster_positions = {
+                cluster: (
+                    np.median(x_positions[df_cluster_assignments[cluster_keys[i]] == cluster]),
+                    np.median(y_positions[df_cluster_assignments[cluster_keys[i]] == cluster]),
+                )
+                for cluster in unique_clusters[i]
+            }
+
+            node_positions.update(
+                {
+                    f"{cluster_keys[i]}_{cluster}": (
+                        cluster_positions[cluster][0],
+                        cluster_positions[cluster][1],
+                    )
+                    for j, cluster in enumerate(unique_clusters[i])
+                }
             )
-        )
+        else:
+            node_positions.update(
+                get_centered_positions(
+                    nodes=node_names[i],
+                    level=i,
+                    y_spacing=y_spacing,
+                    x_spacing=x_spacing,
+                )
+            )
 
     # Use the provided colormap to color the nodes
     node_levels = [[i] * len(unique_clusters[i]) for i in range(len(unique_clusters))]
@@ -211,6 +229,16 @@ def clustree(
     figsize = x_spacing * len(cluster_keys), y_spacing * len(unique_clusters[0])
     fig, ax = plt.subplots(figsize=figsize, dpi=300)
 
+    # Plot the scatter reference if provided
+    if scatter_reference is not None:
+        ax.scatter(
+            adata.obsm[scatter_reference][:, 0],
+            adata.obsm[scatter_reference][:, 1],
+            c="lightgrey",
+            alpha=0.5,
+            s=10,
+        )
+
     # Scale the edge width based on the edge weight
     edge_widths = [G.edges[edge]["weight"] for edge in G.edges]
 
@@ -218,7 +246,7 @@ def clustree(
     edge_widths = np.clip((np.array(edge_widths) * edge_width_range[1]) / np.max(edge_widths), *edge_width_range)
 
     # Draw the graph
-    graph_plot_kwargs = {
+    graph_plot_kwargs_base = {
         "G": G,
         "with_labels": True,
         "labels": {node: node.split("_")[-1] for node in G.nodes},
@@ -239,10 +267,10 @@ def clustree(
     }
 
     if graph_plot_kwargs is not None:
-        graph_plot_kwargs.update(graph_plot_kwargs)
+        graph_plot_kwargs_base.update(graph_plot_kwargs)
 
     nx.draw(
-        **graph_plot_kwargs,
+        **graph_plot_kwargs_base,
     )
 
     # Plot the colorbar
@@ -256,8 +284,17 @@ def clustree(
 
     # Show the name of the cluster key on the left side of the plot
     if show_cluster_keys:
-        x_min, _x_max = ax.get_xlim()
-        y_positions_levels = [node_positions[node_names[i][0]][1] for i in range(len(node_names))]
+        x_min = ax.get_xlim()[0] if scatter_reference is None else ax.get_xlim()[1] + 2
+        if scatter_reference is not None:
+            # Position them in equal intervals along the y-axis
+            y_positions_levels = np.linspace(
+                ax.get_ylim()[1], ax.get_ylim()[1] - len(cluster_keys) * 1.0, len(cluster_keys)
+            )
+            # Use the level colors for the facecolor
+            facecolor = [node_colormap(norm(i)) for i in range(len(cluster_keys))]
+        else:
+            y_positions_levels = [node_positions[node_names[i][0]][1] for i in range(len(node_names))]
+            facecolor = ["white"] * len(cluster_keys)
 
         for i, key in enumerate(cluster_keys):
             x = x_min - 0.5
@@ -272,7 +309,7 @@ def clustree(
                 color="black",
                 ha="center",
                 va="center",
-                bbox={"boxstyle": "round", "facecolor": "white", "edgecolor": "black"},
+                bbox={"boxstyle": "round", "facecolor": facecolor[i], "edgecolor": "black"},
             )
 
     # Set the title of the plot

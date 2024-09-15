@@ -15,13 +15,11 @@ will differ between the implementations.
 
 ## Getting started
 
-Please refer to the [documentation][link-docs]. In particular, the
-
--   [API documentation][link-api].
+Please refer to the [documentation][link-docs].
 
 ## Installation
 
-You need to have Python 3.10 or newer installed on your system. If you don't have
+You need to have Python 3.9 or newer installed on your system. If you don't have
 Python installed, we recommend installing [Mambaforge](https://github.com/conda-forge/miniforge#mambaforge).
 
 There are several alternative options to install pyclustree:
@@ -61,5 +59,4 @@ Please refer to the [LICENSE][license] file.
 [issue-tracker]: https://github.com/complextissue/pyclustree/issues
 [changelog]: https://pyclustree.readthedocs.io/latest/changelog.html
 [link-docs]: https://pyclustree.readthedocs.io
-[link-api]: https://pyclustree.readthedocs.io/latest/api.html
 [link-pypi]: https://pypi.org/project/pyclustree

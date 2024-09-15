@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 
 
@@ -42,3 +43,34 @@ def get_centered_positions(
     for i, node in enumerate(nodes):
         pos[node] = (x_start + i * x_spacing, -level * y_spacing)  # Calculate and assign position
     return pos
+
+
+def order_unique_clusters(
+    unique_clusters: list[list[str]],
+    transition_matrices: list[pd.DataFrame],
+) -> list[list[str]]:
+    """Order unique clusters by parent-child relationships.
+
+    Args:
+        unique_clusters (list[list[str]]): List of unique clusters.
+        transition_matrices (list[pd.DataFrame]): List of transition matrices.
+
+    Returns:
+        list[list[str]]: List of unique clusters ordered by parent-child relationships.
+    """
+    ordered_clusters = [unique_clusters[0]]
+
+    for i, transition_matrix in enumerate(transition_matrices):
+        ordered_child_clusters = []
+
+        for parent_cluster in ordered_clusters[i]:
+            # Find the child clusters where the argmax of the transition matrix is the parent cluster
+            child_clusters = np.array(unique_clusters[i + 1])[
+                (transition_matrix.idxmax(axis=0).values == parent_cluster)
+            ]
+            for child_cluster in child_clusters:
+                ordered_child_clusters.append(child_cluster)
+
+        ordered_clusters.append(ordered_child_clusters)
+
+    return ordered_clusters
