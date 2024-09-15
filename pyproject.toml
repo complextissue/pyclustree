@@ -1,0 +1,131 @@
+[build-system]
+build-backend = "flit_core.buildapi"
+
+requires = [ "flit-core>=3.4,<4" ]
+
+[project]
+name = "pyclustree"
+version = "0.1.0"
+description = "Visualise Clusterings at Different Resolutions"
+readme = "README.md"
+license = { file = "LICENSE" }
+maintainers = [ { name = "Malte Hellmig", email = "harryhaller001@gmail.com" } ]
+authors = [ { name = "Malte Hellmig" } ]
+requires-python = ">=3.9"
+classifiers = [
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+  "anndata",
+  "matplotlib",
+  "networkx",
+  "numpy",
+  "pandas",
+  "seaborn",
+  # for debug logging (referenced from the issue template)
+  "session-info",
+]
+
+optional-dependencies.dev = [
+  "coverage",
+  "docutils>=0.8,!=0.18.*,!=0.19.*",
+  "ipykernel",
+  "ipython",
+  "myst-nb>=1.1",
+  "pandas",
+  "pre-commit",
+  "pytest",
+  "python-igraph",
+  "scanpy",
+  # Until pybtex >0.23.0 releases: https://bitbucket.org/pybtex-devs/pybtex/issues/169/
+  "setuptools",
+  "sphinx>=4",
+  "sphinx-autodoc-typehints",
+  "sphinx-book-theme>=1",
+  "sphinx-copybutton",
+  "sphinx-tabs",
+  "sphinxcontrib-bibtex>=1",
+  "sphinxext-opengraph",
+  "twine>=4.0.2",
+]
+# https://docs.pypi.org/project_metadata/#project-urls
+urls.Documentation = "https://pyclustree.readthedocs.io/"
+urls.Homepage = "https://github.com/complextissue/pyclustree"
+urls.Source = "https://github.com/complextissue/pyclustree"
+
+[tool.flit.sdist]
+exclude = [ "docs/*", "test/*" ]
+
+[tool.ruff]
+line-length = 120
+extend-include = [ "*.ipynb" ]
+
+format.docstring-code-format = true
+
+lint.select = [
+  "B",      # flake8-bugbear
+  "BLE",    # flake8-blind-except
+  "C4",     # flake8-comprehensions
+  "D",      # pydocstyle
+  "E",      # Error detected by Pycodestyle
+  "F",      # Errors detected by Pyflakes
+  "I",      # isort
+  "RUF100", # Report unused noqa directives
+  "TID",    # flake8-tidy-imports
+  "UP",     # pyupgrade
+  "W",      # Warning detected by Pycodestyle
+]
+lint.ignore = [
+  "B008", # Errors from function calls in argument defaults. These are fine when the result is immutable.
+  "D100", # Missing docstring in public module
+  "D104", # Missing docstring in public package
+  "D105", # __magic__ methods are often self-explanatory, allow missing docstrings
+  "D107", # Missing docstring in __init__
+  # Disable one in each pair of mutually incompatible rules
+  "D203", # We don’t want a blank line before a class docstring
+  "D213", # <> We want docstrings to start immediately after the opening triple quote
+  "D400", # first line should end with a period [Bug: doesn’t work with single-line docstrings]
+  "D401", # First line should be in imperative mood; try rephrasing
+  "E501", # line too long -> we accept long comment lines; formatter gets rid of long code lines
+  "E731", # Do not assign a lambda expression, use a def -> lambda expression assignments are convenient
+  "E741", # allow I, O, l as variable names -> I is the identity matrix
+]
+lint.per-file-ignores."*/__init__.py" = [ "F401" ]
+lint.per-file-ignores."docs/*" = [ "I" ]
+lint.per-file-ignores."tests/*" = [ "D" ]
+lint.pydocstyle.convention = "google"
+
+[tool.pytest.ini_options]
+log_format = "%(asctime)s %(levelname)s %(message)s"
+log_date_format = "%Y-%m-%d %H:%M:%S"
+log_level = "WARN"
+log_cli = "true"
+testpaths = [ "tests" ]
+xfail_strict = true
+addopts = [
+  "--import-mode=importlib", # allow using test files with same name
+]
+
+[tool.coverage.run]
+source = [ "pyclustree" ]
+omit = [ "*/test/*" ]
+
+[tool.coverage.report]
+exclude_lines = [
+  "if __name__ == __main__:",
+  "raise",
+  "except",
+  "warning",
+  "def __repr__",
+  "def __str__",
+  "file_path = Path",
+  "return None",
+] # don't complain if non-runnable code isn't run:
+ignore_errors = true
+
+[tool.coverage.html]
+directory = "docs/coverage_report"
