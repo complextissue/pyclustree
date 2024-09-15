@@ -1,17 +1,10 @@
 # pyclustree
 
-[![Tests][badge-tests]][link-tests]
-[![Documentation][badge-docs]][link-docs]
-
-[badge-tests]: https://img.shields.io/github/actions/workflow/status/complextissue/pyclustree/test.yaml?branch=main
-[link-tests]: https://github.com/complextissue/pyclustree/actions/workflows/test.yml
-[badge-docs]: https://img.shields.io/readthedocs/pyclustree
-
 [![Version](https://img.shields.io/pypi/v/pyclustree)](https://pypi.org/project/pyclustree/)
-[![License](https://img.shields.io/pypi/l/pyclustree)](https://github.com/complextissue/pyclustree)
-![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/complextissue/pyclustree/ci.yml)
-[![Documentation Status](https://readthedocs.org/projects/pyclustree/badge/?version=latest)](https://pyclustree.readthedocs.io/en/latest/?badge=latest)
-[![Codecov](https://codecov.io/gh/complextissue/pyclustree/graph/badge.svg)](https://codecov.io/gh/complextissue/pyclustree)
+[![License](https://img.shields.io/pypi/l/pyclustree)](https://img.shields.io/pypi/l/pyclustree)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/complextissue/pyclustree/test.yaml)
+[![Documentation Status](https://readthedocs.org/projects/pyclustree/badge/?version=stable)](https://pyclustree.readthedocs.io/stable/?badge=stable)
+[![Codecov](https://codecov.io/gh/complextissue/pyclustree/graph/badge.svg?token=45BNU20CBP)](https://codecov.io/gh/complextissue/pyclustree)
 [![Python Version Required](https://img.shields.io/pypi/pyversions/pyclustree)](https://pypi.org/project/pyclustree/)
 
 Visualize cluster assignments at different resolutions. Possbile applications include finding the optimal resolution for

@@ -6,11 +6,14 @@ requires = [ "flit-core>=3.4,<4" ]
 [project]
 name = "pyclustree"
 version = "0.1.0"
-description = "Visualise Clusterings at Different Resolutions"
+description = "Visualize cluster assignments at different resolutions"
 readme = "README.md"
 license = { file = "LICENSE" }
-maintainers = [ { name = "Malte Hellmig", email = "harryhaller001@gmail.com" } ]
-authors = [ { name = "Malte Hellmig" } ]
+maintainers = [
+  { name = "Malte Hellmig", email = "harryhaller001@gmail.com" },
+  { name = "Malte Kuehl", email = "malte.kuehl@clin.au.dk" },
+]
+authors = [ { name = "Malte Hellmig" }, { name = "Malte Kuehl" } ]
 requires-python = ">=3.9"
 classifiers = [
   "Programming Language :: Python :: 3 :: Only",
