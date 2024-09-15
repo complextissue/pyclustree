@@ -1,29 +1,31 @@
-name: Release
+name: Upload Python Package
 
 on:
   release:
     types: [published]
 
-# Use "trusted publishing", see https://docs.pypi.org/trusted-publishers/
+permissions:
+  contents: read
+
 jobs:
-  release:
-    name: Upload release to PyPI
+  deploy:
     runs-on: ubuntu-latest
-    environment:
-      name: pypi
-      url: https://pypi.org/p/pyclustree
-    permissions:
-      id-token: write # IMPORTANT: this permission is mandatory for trusted publishing
+
     steps:
       - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v3
         with:
-          filter: blob:none
-          fetch-depth: 0
-      - uses: actions/setup-python@v4
-        with:
-          python-version: "3.x"
-          cache: "pip"
-      - run: pip install build
-      - run: python -m build
-      - name: Publish package distributions to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
+          python-version: "3.11"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flit
+      - name: Build package
+        run: flit build
+      - name: Publish package
+        run: flit publish
+        env:
+          FLIT_USERNAME: "__token__"
+          FLIT_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+          FLIT_INDEX_URL: "https://upload.pypi.org/legacy/"
