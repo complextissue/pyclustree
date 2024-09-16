@@ -53,7 +53,10 @@ Please refer to the [LICENSE][license] file.
 
 ## Citation
 
-> t.b.a
+Please cite both the original R package as well as this implementation when using `pyclustree`. For example: Cluster resolution was determined based on visualization with pyclustree (Kuehl et al., 2024), a Python implementation of clustree (Zappia et al., 2018).
+
+-   pyclustree: t.b.a
+-   Zappia, L., & Oshlack, A. (2018). Clustering trees: a visualization for evaluating clusterings at multiple resolutions. Gigascience, 7(7), giy083.
 
 [license]: https://github.com/complextissue/pyclustree/blob/main/LICENSE
 [issue-tracker]: https://github.com/complextissue/pyclustree/issues
