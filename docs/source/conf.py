@@ -103,7 +103,7 @@ html_theme = "furo"
 html_title = "pyclustree"
 
 html_static_path = ["_static"]
-# html_logo = "_static/pyclustree_logo.png"
+html_logo = "_static/pyclustree_logo.png"
 
 html_css_files = [
     "css/custom.css",
