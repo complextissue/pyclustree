@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 
 
@@ -71,20 +70,25 @@ def order_unique_clusters(
         # For each parent cluster, find and order its child clusters
         for parent_cluster in parent_clusters:
             # Find the child clusters where this parent is the maximum contributor
-            max_contributor = transition_matrix.idxmax(axis=0) == parent_cluster
-            relevant_child_clusters = np.array(unique_clusters[i + 1])[max_contributor]
+            # idxmax() gives the row (parent cluster) contributing most to each column (child cluster)
+            child_max_contributor = transition_matrix.idxmax(axis=0) == parent_cluster
 
-            # Get the transition fractions from the parent cluster to each relevant child cluster
-            transition_fractions = transition_matrix.loc[parent_cluster, relevant_child_clusters].values
+            # Filter relevant child clusters
+            relevant_child_clusters = transition_matrix.columns[child_max_contributor]
+
+            if len(relevant_child_clusters) == 0:
+                continue  # Skip if no relevant child clusters are found
+
+            # Get the transition fractions for these child clusters
+            transition_fractions = transition_matrix.loc[parent_cluster, relevant_child_clusters]
 
             # Sort relevant child clusters based on the transition fractions in descending order
-            sorted_child_indices = np.argsort(transition_fractions)[::-1]  # Sort in descending order
-            sorted_child_clusters = relevant_child_clusters[sorted_child_indices]
+            sorted_child_clusters = transition_fractions.sort_values(ascending=False).index
 
             # Add the ordered child clusters for this parent
             ordered_child_clusters.extend(sorted_child_clusters)
 
         # Add the ordered child clusters to the hierarchy
-        ordered_clusters.append(ordered_child_clusters)
+        ordered_clusters.append(list(ordered_child_clusters))
 
     return ordered_clusters
