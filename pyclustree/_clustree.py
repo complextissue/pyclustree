@@ -193,13 +193,13 @@ def clustree(
     if node_color_gene is not None:
         # Get the expression values for the specified gene
         if node_color_gene_use_raw:
-            gene_counts = adata.raw.X[:, adata.raw.var_names == node_color_gene]
-        else:
             if adata.raw is None:
                 raise ValueError(
                     "The raw data is not available. Please set `node_color_gene_use_raw` to False or provide raw data."
                 )
 
+            gene_counts = adata.raw.X[:, adata.raw.var_names == node_color_gene]
+        else:
             gene_counts = adata.X[:, adata.var_names == node_color_gene]
 
         # Flatten gene_counts if it's 2D (i.e., n_cells x 1)
