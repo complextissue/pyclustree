@@ -58,19 +58,33 @@ def order_unique_clusters(
     Returns:
         list[list[str]]: List of unique clusters ordered by parent-child relationships.
     """
+    # Initialize with the first hierarchy level, assuming it's already ordered
     ordered_clusters = [unique_clusters[0]]
 
+    # Iterate over each transition matrix (between hierarchy levels)
     for i, transition_matrix in enumerate(transition_matrices):
         ordered_child_clusters = []
 
-        for parent_cluster in ordered_clusters[i]:
-            # Find the child clusters where the argmax of the transition matrix is the parent cluster
-            child_clusters = np.array(unique_clusters[i + 1])[
-                (transition_matrix.idxmax(axis=0).values == parent_cluster)
-            ]
-            for child_cluster in child_clusters:
-                ordered_child_clusters.append(child_cluster)
+        # Get the current level of parent clusters (already ordered)
+        parent_clusters = ordered_clusters[i]
 
+        # For each parent cluster, find and order its child clusters
+        for parent_cluster in parent_clusters:
+            # Find the child clusters where this parent is the maximum contributor
+            max_contributor = transition_matrix.idxmax(axis=0) == parent_cluster
+            relevant_child_clusters = np.array(unique_clusters[i + 1])[max_contributor]
+
+            # Get the transition fractions from the parent cluster to each relevant child cluster
+            transition_fractions = transition_matrix.loc[parent_cluster, relevant_child_clusters].values
+
+            # Sort relevant child clusters based on the transition fractions in descending order
+            sorted_child_indices = np.argsort(transition_fractions)[::-1]  # Sort in descending order
+            sorted_child_clusters = relevant_child_clusters[sorted_child_indices]
+
+            # Add the ordered child clusters for this parent
+            ordered_child_clusters.extend(sorted_child_clusters)
+
+        # Add the ordered child clusters to the hierarchy
         ordered_clusters.append(ordered_child_clusters)
 
     return ordered_clusters

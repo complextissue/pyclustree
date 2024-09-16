@@ -16,10 +16,6 @@ project = "pyclustree"
 copyright = "2024, Malte Kuehl"
 author = "Malte Kuehl"
 
-# The full version, including alpha/beta/rc tags
-release = "0.9.0"
-
-
 # -- General configuration ---------------------------------------------------
 
 templates_path = ["_templates"]
