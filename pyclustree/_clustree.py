@@ -195,6 +195,11 @@ def clustree(
         if node_color_gene_use_raw:
             gene_counts = adata.raw.X[:, adata.raw.var_names == node_color_gene]
         else:
+            if adata.raw is None:
+                raise ValueError(
+                    "The raw data is not available. Please set `node_color_gene_use_raw` to False or provide raw data."
+                )
+
             gene_counts = adata.X[:, adata.var_names == node_color_gene]
 
         # Flatten gene_counts if it's 2D (i.e., n_cells x 1)
@@ -204,29 +209,26 @@ def clustree(
         node_color_gene_transformer = np.mean if node_color_gene_transformer is None else node_color_gene_transformer
         gene_cluster_means = []
         for i, key in enumerate(cluster_keys):
-            gene_cluster_means.append(
-                [
+            for cluster in unique_clusters[i]:
+                gene_cluster_means.append(
                     np.nan_to_num(
                         node_color_gene_transformer(gene_counts[df_cluster_assignments[key] == cluster]),
                         nan=0,
                     )
-                    for cluster in unique_clusters[i]
-                ]
-            )
+                )
 
-        gene_cluster_means_flat = [item for sublist in gene_cluster_means for item in sublist]
-
-        gene_min, gene_max = np.min(gene_cluster_means_flat), np.max(gene_cluster_means_flat)
+        gene_min, gene_max = np.min(gene_cluster_means), np.max(gene_cluster_means)
         norm_gene = plt.Normalize(vmin=gene_min, vmax=gene_max)
 
-        node_colors = [node_colormap(norm_gene(gene_cluster_mean)) for gene_cluster_mean in gene_cluster_means_flat]
+        node_colors = [node_colormap(norm_gene(gene_cluster_mean)) for gene_cluster_mean in gene_cluster_means]
 
     # Scale the node size based on the number of cells in each cluster
-    node_sizes = [adata.obs[key].value_counts().sort_index().values for key in cluster_keys]
-    node_sizes_flat = [item for sublist in node_sizes for item in sublist]
-    node_sizes_flat = np.clip(
-        (np.array(node_sizes_flat) * node_size_range[1]) / np.max(node_sizes_flat), *node_size_range
-    )
+    node_sizes = []
+    for i in range(len(cluster_keys)):
+        for cluster in unique_clusters[i]:
+            node_sizes.append(np.sum(df_cluster_assignments[cluster_keys[i]] == cluster))
+
+    node_sizes = np.clip((np.array(node_sizes) * node_size_range[1]) / np.max(node_sizes), *node_size_range)
 
     # Create the plot
     figsize = x_spacing * len(cluster_keys), y_spacing * len(unique_clusters[0])
@@ -260,7 +262,7 @@ def clustree(
         "font_size": 10,
         "font_color": "white",
         "font_weight": "bold",
-        "node_size": node_sizes_flat,
+        "node_size": node_sizes,
         "edge_cmap": plt.cm.Greys,
         "edge_vmin": 0,
         "edge_vmax": 1,
