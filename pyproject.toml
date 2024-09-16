@@ -43,6 +43,8 @@ dependencies = [
 optional-dependencies.dev = [
   "coverage",
   "docutils>=0.8,!=0.18.*,!=0.19.*",
+  "flit",
+  "furo",
   "ipykernel",
   "ipython",
   "myst-nb>=1.1",
@@ -54,9 +56,12 @@ optional-dependencies.dev = [
   # Until pybtex >0.23.0 releases: https://bitbucket.org/pybtex-devs/pybtex/issues/169/
   "setuptools",
   "sphinx>=4",
+  "sphinx-autoapi",
   "sphinx-autodoc-typehints",
   "sphinx-book-theme>=1",
   "sphinx-copybutton",
+  "sphinx-design",
+  "sphinx-rtd-theme",
   "sphinx-tabs",
   "sphinxcontrib-bibtex>=1",
   "sphinxext-opengraph",
