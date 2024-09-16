@@ -5,7 +5,7 @@ requires = [ "flit-core>=3.4,<4" ]
 
 [project]
 name = "pyclustree"
-version = "0.1.0"
+version = "0.2.0"
 description = "Visualize cluster assignments at different resolutions"
 readme = "README.md"
 license = { file = "LICENSE" }
