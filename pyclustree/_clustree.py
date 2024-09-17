@@ -99,12 +99,14 @@ def clustree(
         if scatter_reference is not None:
             raise ValueError("Currently, you cannot provide both a scatter reference and a node color gene.")
 
-        if node_color_gene_use_raw:
+        if node_color_gene_use_raw and node_color_gene not in adata.obs.columns:
             assert (
                 node_color_gene in adata.raw.var_names
             ), "The provided gene should be present in the adata.raw.var_names."
         else:
-            assert node_color_gene in adata.var_names, "The provided gene should be present in the adata.var_names."
+            assert (
+                node_color_gene in adata.obs.columns or node_color_gene in adata.var_names
+            ), "The provided gene should be present in the adata.var_names/adata.raw.var_names or adata.obs."
 
     if isinstance(node_colormap, str):
         node_colormap = plt.get_cmap(node_colormap)
@@ -192,7 +194,9 @@ def clustree(
     # If a node color gene is provided, use the expression of the gene to color the nodes
     if node_color_gene is not None:
         # Get the expression values for the specified gene
-        if node_color_gene_use_raw:
+        if node_color_gene in adata.obs.columns:
+            gene_counts = adata.obs[node_color_gene].values
+        elif node_color_gene_use_raw:
             if adata.raw is None:
                 raise ValueError(
                     "The raw data is not available. Please set `node_color_gene_use_raw` to False or provide raw data."
