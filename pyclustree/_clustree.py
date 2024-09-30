@@ -325,7 +325,7 @@ def clustree(
         warning("Colorbars are not supported when providing a list of colormaps. Ignoring the argument.")
 
     # Show the name of the cluster key on the left side of the plot
-    if show_cluster_keys and not isinstance(node_colormap, list):
+    if show_cluster_keys:
         x_min = ax.get_xlim()[0] if scatter_reference is None else ax.get_xlim()[1] + 2
         if scatter_reference is not None:
             # Position them in equal intervals along the y-axis
@@ -333,7 +333,11 @@ def clustree(
                 ax.get_ylim()[1], ax.get_ylim()[1] - len(cluster_keys) * 1.0, len(cluster_keys)
             )
             # Use the level colors for the facecolor
-            facecolor = [node_colormap(norm(i)) for i in range(len(cluster_keys))]
+            if isinstance(node_colormap, list):
+                warning("Cannot show colored cluster keys when providing a list of colormaps. Showing white keys.")
+                facecolor = ["white"] * len(cluster_keys)
+            else:
+                facecolor = [node_colormap(norm(i)) for i in range(len(cluster_keys))]
         else:
             y_positions_levels = [node_positions[node_names[i][0]][1] for i in range(len(node_names))]
             facecolor = ["white"] * len(cluster_keys)
@@ -353,8 +357,6 @@ def clustree(
                 va="center",
                 bbox={"boxstyle": "round", "facecolor": facecolor[i], "edgecolor": "black"},
             )
-    elif show_cluster_keys and isinstance(node_colormap, list):
-        warning("Cluster keys are not supported when providing a list of colormaps. Ignoring the argument.")
 
     # Set the title of the plot
     if title is not None:
