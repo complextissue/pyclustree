@@ -1,3 +1,4 @@
+from logging import warning
 from typing import Optional, Union
 
 import networkx as nx
@@ -14,7 +15,7 @@ def clustree(
     cluster_keys: list[str],
     title: Optional[str] = None,
     scatter_reference: Optional[str] = None,
-    node_colormap: Union[Colormap, str] = "tab20",
+    node_colormap: Union[list[Colormap], Colormap, str] = "tab20",
     node_color_gene: Optional[str] = None,
     node_color_gene_use_raw: bool = True,
     node_color_gene_transformer: Optional[callable] = None,
@@ -61,7 +62,10 @@ def clustree(
         title (str, optional): The title of the plot. Defaults to None.
         scatter_reference (str, optional): The key in `adata.obsm` to use as a reference for the scatter plot. If None,
             the nodes will be placed in a hierarchical tree. Defaults to None.
-        node_colormap (Union[Colormap, str], optional): The colormap to use for coloring the nodes. Defaults to "tab20".
+        node_colormap (Union[Colormap, str], optional): The colormap to use for coloring the nodes. If a list is
+            provided, the first colormap will be used for the first clustering, the second colormap for the second
+            clustering, and so on. For each clustering, the colors will be scaled based on the number of clusters.
+            Defaults to "tab20".
         node_color_gene (str, optional): The gene to use for coloring the nodes. If provided, node colors will be based
             on the expression of this gene. If None, node colors will be based on the cluster key/level.
             Defaults to None.
@@ -188,8 +192,26 @@ def clustree(
     # Use the provided colormap to color the nodes
     node_levels = [[i] * len(unique_clusters[i]) for i in range(len(unique_clusters))]
     node_levels_flat = [item for sublist in node_levels for item in sublist]
-    norm = plt.Normalize(vmin=0, vmax=len(unique_clusters[0]))
-    node_colors = [node_colormap(norm(value)) for value in node_levels_flat]
+    norm = plt.Normalize(vmin=0, vmax=len(np.unique(node_levels_flat)) - 1)
+
+    if not isinstance(node_colormap, list):
+        node_colors = [node_colormap(norm(value)) for value in node_levels_flat]
+    else:
+        # Ensure that the length of the list corresponds to the number of clusterings
+        assert len(node_colormap) == len(
+            cluster_keys
+        ), "The length of the colormap list should match the number of cluster keys."
+        assert (
+            node_color_gene is None
+        ), "The node_color_gene argument is not supported when providing a list of colormaps."
+
+        node_colors = []
+        for i in range(len(cluster_keys)):
+            node_colormap_level = (
+                plt.cm.get_cmap(node_colormap[i]) if isinstance(node_colormap[i], str) else node_colormap[i]
+            )
+            norm_level = plt.Normalize(vmin=0, vmax=len(unique_clusters[i]) - 1)
+            node_colors.extend([node_colormap_level(norm_level(j)) for j in range(len(unique_clusters[i]))])
 
     # If a node color gene is provided, use the expression of the gene to color the nodes
     if node_color_gene is not None:
@@ -292,16 +314,18 @@ def clustree(
         nx.draw_networkx_edge_labels(G, node_positions, edge_labels=formatted_edge_labels, font_size=6)
 
     # Plot the colorbar
-    if show_colorbar:
+    if show_colorbar and not isinstance(node_colormap, list):
         if node_color_gene is not None:
             sm = plt.cm.ScalarMappable(cmap=node_colormap, norm=norm_gene)
         else:
             sm = plt.cm.ScalarMappable(cmap=node_colormap, norm=norm)
         sm.set_array([])
         fig.colorbar(sm, ax=ax, orientation="vertical", fraction=0.02, pad=0.02)
+    elif show_colorbar and isinstance(node_colormap, list):
+        warning("Colorbars are not supported when providing a list of colormaps. Ignoring the argument.")
 
     # Show the name of the cluster key on the left side of the plot
-    if show_cluster_keys:
+    if show_cluster_keys and not isinstance(node_colormap, list):
         x_min = ax.get_xlim()[0] if scatter_reference is None else ax.get_xlim()[1] + 2
         if scatter_reference is not None:
             # Position them in equal intervals along the y-axis
@@ -329,6 +353,8 @@ def clustree(
                 va="center",
                 bbox={"boxstyle": "round", "facecolor": facecolor[i], "edgecolor": "black"},
             )
+    elif show_cluster_keys and isinstance(node_colormap, list):
+        warning("Cluster keys are not supported when providing a list of colormaps. Ignoring the argument.")
 
     # Set the title of the plot
     if title is not None:
