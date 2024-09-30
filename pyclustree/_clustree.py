@@ -125,6 +125,7 @@ def clustree(
     ]
 
     unique_clusters = [np.unique(df_cluster_assignments[key]).tolist() for key in cluster_keys]
+    unique_clusters_sorted = [sorted(unique_clusters_level) for unique_clusters_level in unique_clusters]
 
     if order_clusters:
         unique_clusters = order_unique_clusters(unique_clusters, transition_matrices)
@@ -211,7 +212,13 @@ def clustree(
                 plt.cm.get_cmap(node_colormap[i]) if isinstance(node_colormap[i], str) else node_colormap[i]
             )
             norm_level = plt.Normalize(vmin=0, vmax=len(unique_clusters[i]) - 1)
-            node_colors.extend([node_colormap_level(norm_level(j)) for j in range(len(unique_clusters[i]))])
+
+            node_colors.extend(
+                [
+                    node_colormap_level(norm_level(unique_clusters_sorted[i].index(unique_cluster)))
+                    for unique_cluster in unique_clusters[i]
+                ]
+            )
 
     # If a node color gene is provided, use the expression of the gene to color the nodes
     if node_color_gene is not None:

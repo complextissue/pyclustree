@@ -40,7 +40,10 @@ def get_centered_positions(
     x_start = -(n_nodes - 1) / 2 * x_spacing  # Center the nodes on the x-axis
     pos = {}
     for i, node in enumerate(nodes):
-        pos[node] = (x_start + i * x_spacing, -level * y_spacing)  # Calculate and assign position
+        pos[node] = (
+            x_start + i * x_spacing,
+            -level * y_spacing,
+        )  # Calculate and assign position
     return pos
 
 
