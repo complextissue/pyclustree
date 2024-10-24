@@ -6,6 +6,7 @@
 [![Documentation Status](https://readthedocs.org/projects/pyclustree/badge/?version=stable)](https://pyclustree.readthedocs.io/stable/?badge=stable)
 [![Codecov](https://codecov.io/gh/complextissue/pyclustree/graph/badge.svg?token=45BNU20CBP)](https://codecov.io/gh/complextissue/pyclustree)
 [![Python Version Required](https://img.shields.io/pypi/pyversions/pyclustree)](https://pypi.org/project/pyclustree/)
+[![DOI](https://zenodo.org/badge/857752929.svg)](https://doi.org/10.5281/zenodo.13987570)
 
 Visualize cluster assignments at different resolutions. Possbile applications include finding the optimal resolution for
 single-cell RNA-sequencing clusterings.
@@ -55,8 +56,8 @@ Please refer to the [LICENSE][license] file.
 
 Please cite both the original R package as well as this implementation when using `pyclustree`. For example: Cluster resolution was determined based on visualization with pyclustree (Kuehl et al., 2024), a Python implementation of clustree (Zappia et al., 2018).
 
--   pyclustree: t.b.a
--   Zappia, L., & Oshlack, A. (2018). Clustering trees: a visualization for evaluating clusterings at multiple resolutions. Gigascience, 7(7), giy083.
+-   pyclustree: Kuehl, M., Hellmig, M., & Puelles, V. G. (2024). pyclustree: Visualizing cluster resolution optimization for biomedical data (0.3.1). Zenodo. https://doi.org/10.5281/zenodo.13987570
+-   clustree: Zappia, L., & Oshlack, A. (2018). Clustering trees: a visualization for evaluating clusterings at multiple resolutions. Gigascience, 7(7), giy083.
 
 [license]: https://github.com/complextissue/pyclustree/blob/main/LICENSE
 [issue-tracker]: https://github.com/complextissue/pyclustree/issues
