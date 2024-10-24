@@ -1,0 +1,13 @@
+cff-version: 1.2.0
+message: "If you use pyclustree, please cite it as below. Please also cite the original clustree package."
+authors:
+  - family-names: "Kuehl"
+    given-names: "Malte"
+  - family-names: "Hellmig"
+    given-names: "Malte"
+  - family-names: "Puelles"
+    given-names: "Victor G."
+title: "pyclustree: Visualizing cluster resolution optimization for biomedical data"
+version: 0.3.1
+date-released: 2024-10-24
+url: "https://github.com/complextissue/pyclustree/"
