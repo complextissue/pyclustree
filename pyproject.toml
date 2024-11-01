@@ -10,7 +10,7 @@ description = "Visualize cluster assignments at different resolutions"
 readme = "README.md"
 license = { file = "LICENSE" }
 maintainers = [
-  { name = "Malte Hellmig", email = "harryhaller001@gmail.com" },
+  { name = "Malte Hellmig", email = "m.hellmig@uke.de" },
   { name = "Malte Kuehl", email = "malte.kuehl@clin.au.dk" },
 ]
 authors = [ { name = "Malte Hellmig" }, { name = "Malte Kuehl" } ]
@@ -47,6 +47,7 @@ optional-dependencies.dev = [
   "furo",
   "ipykernel",
   "ipython",
+  "ipywidgets",
   "myst-parser",
   "nbsphinx",
   "pandas",
