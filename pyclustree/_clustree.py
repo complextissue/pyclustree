@@ -1,13 +1,28 @@
 from logging import warning
-from typing import Optional, Union
+from typing import Literal, Optional, TypeAlias, Union
 
 import networkx as nx
 import numpy as np
 from anndata import AnnData
 from matplotlib import pyplot as plt
 from matplotlib.colors import Colormap
+from numpy.typing import NDArray
+from sklearn.metrics import (  # adjusted_rand_score,; normalized_mutual_info_score,; adjusted_mutual_info_score,
+    calinski_harabasz_score,
+    davies_bouldin_score,
+    silhouette_score,
+)
 
 from ._utils import calculate_transition_matrix, get_centered_positions, order_unique_clusters
+
+ClusteringMetricsType: TypeAlias = Literal[
+    # "adjusted_rand",
+    # "normalized_mutual_info",
+    # "adjusted_mutual_info",
+    "silhouette",
+    "davies_bouldin",
+    "calinski_harabasz",
+]
 
 
 def clustree(
@@ -29,6 +44,8 @@ def clustree(
     show_fraction: bool = False,
     show_cluster_keys: bool = True,
     graph_plot_kwargs: Optional[dict] = None,
+    score_clustering: Optional[ClusteringMetricsType] = None,
+    score_basis: Literal["X", "raw", "pca"] = "pca",
 ) -> plt.Figure:
     """Create a hierarchical clustering tree visualization to compare different clustering resolutions.
 
@@ -88,6 +105,9 @@ def clustree(
             Defaults to True.
         graph_plot_kwargs (Optional[dict], optional): Additional keyword arguments to pass to `nx.draw`. Will override
             the default arguments. Defaults to None.
+        score_clustering (Optional[ClusteringMetricsType], optional): Add scoring method to evaluate clustering.
+            Scores are added to the left side of the plot.
+        score_basis (Literal["X", "raw", "pca"]): Features to use as basis to evaluate clustering.
 
     Returns:
         plt.Figure: The matplotlib figure object of the clustree visualization.
@@ -98,6 +118,37 @@ def clustree(
     assert (
         scatter_reference is None or scatter_reference in adata.obsm
     ), "The provided scatter reference is not valid. It should be present in adata.obsm."
+
+    if scatter_reference is not None and score_clustering is not None:
+        raise ValueError("Cluster scoring is not supported for scatter plotting.")
+
+    # Generate score array
+    score_array: Optional[list[Optional[float]]] = None
+
+    if score_clustering is not None:
+        score_array = [None] * len(cluster_keys)
+        for index, cluster_key in enumerate(cluster_keys):
+            # Assign basis for scoring
+            basis: Optional[NDArray] = None
+
+            if score_basis == "X":
+                basis = adata.X.copy()
+            elif score_basis == "pca":
+                basis = adata.obsm["X_pca"].copy()
+            elif score_basis == "raw":
+                basis = adata.raw.X.copy()
+
+            assert basis is not None, f"Can't score clustering on basis '{score_basis}'"
+
+            # Assign scoring function
+            if score_clustering == "calinski_harabasz":
+                score_array[index] = float(calinski_harabasz_score(X=basis, labels=adata.obs[cluster_key]))
+            elif score_clustering == "davies_bouldin":
+                score_array[index] = float(davies_bouldin_score(X=basis, labels=adata.obs[cluster_key]))
+            elif score_clustering == "silhouette":
+                score_array[index] = float(silhouette_score(X=basis, labels=adata.obs[cluster_key]))
+            else:
+                raise ValueError(f"Score '{score_clustering}' not a valid scoring method")
 
     if node_color_gene is not None:
         if scatter_reference is not None:
@@ -334,6 +385,8 @@ def clustree(
     # Show the name of the cluster key on the left side of the plot
     if show_cluster_keys:
         x_min = ax.get_xlim()[0] if scatter_reference is None else ax.get_xlim()[1] + 2
+        x_max = ax.get_xlim()[1]
+
         if scatter_reference is not None:
             # Position them in equal intervals along the y-axis
             y_positions_levels = np.linspace(
@@ -363,6 +416,43 @@ def clustree(
                 ha="center",
                 va="center",
                 bbox={"boxstyle": "round", "facecolor": facecolor[i], "edgecolor": "black"},
+            )
+
+    if score_clustering is not None:
+        score_to_name: dict[ClusteringMetricsType, str] = {
+            "silhouette": "Silhouette score",
+            "calinski_harabasz": "Calinski and Harabasz score",
+            "davies_bouldin": "Davies-Bouldin score",
+        }
+        x_min = ax.get_xlim()[0]
+        x_max = ax.get_xlim()[1]
+        y_positions_levels = np.linspace(
+            ax.get_ylim()[1], ax.get_ylim()[1] - len(cluster_keys) * 1.0, len(cluster_keys)
+        )
+
+        ax.text(
+            x_max,
+            y_positions_levels[0] + 0.5,
+            s=score_to_name[score_clustering],
+            fontsize=10,
+            color="black",
+            ha="right",
+            va="center",
+        )
+
+        for i in range(len(cluster_keys)):
+            x = x_min - 0.5
+            y = y_positions_levels[i]
+
+            # Annotate cluster scores
+            ax.text(
+                x_max,
+                y,
+                s=str(round(score_array[i], 2)),
+                fontsize=12,
+                color="black",
+                ha="right",
+                va="center",
             )
 
     # Set the title of the plot

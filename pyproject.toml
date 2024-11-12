@@ -35,6 +35,7 @@ dependencies = [
   "networkx",
   "numpy",
   "pandas",
+  "scikit-learn",
   "seaborn",
   # for debug logging (referenced from the issue template)
   "session-info",
