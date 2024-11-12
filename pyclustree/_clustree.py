@@ -1,5 +1,5 @@
 from logging import warning
-from typing import Literal, Optional, TypeAlias, Union
+from typing import Literal, Optional, Union
 
 import networkx as nx
 import numpy as np
@@ -14,15 +14,6 @@ from sklearn.metrics import (  # adjusted_rand_score,; normalized_mutual_info_sc
 )
 
 from ._utils import calculate_transition_matrix, get_centered_positions, order_unique_clusters
-
-ClusteringMetricsType: TypeAlias = Literal[
-    # "adjusted_rand",
-    # "normalized_mutual_info",
-    # "adjusted_mutual_info",
-    "silhouette",
-    "davies_bouldin",
-    "calinski_harabasz",
-]
 
 
 def clustree(
@@ -44,7 +35,7 @@ def clustree(
     show_fraction: bool = False,
     show_cluster_keys: bool = True,
     graph_plot_kwargs: Optional[dict] = None,
-    score_clustering: Optional[ClusteringMetricsType] = None,
+    score_clustering: Optional[Literal["silhouette", "davies_bouldin", "calinski_harabasz"]] = None,
     score_basis: Literal["X", "raw", "pca"] = "pca",
 ) -> plt.Figure:
     """Create a hierarchical clustering tree visualization to compare different clustering resolutions.
@@ -419,7 +410,7 @@ def clustree(
             )
 
     if score_clustering is not None:
-        score_to_name: dict[ClusteringMetricsType, str] = {
+        score_to_name = {
             "silhouette": "Silhouette score",
             "calinski_harabasz": "Calinski and Harabasz score",
             "davies_bouldin": "Davies-Bouldin score",
