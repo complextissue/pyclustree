@@ -35,7 +35,6 @@ dependencies = [
   "networkx",
   "numpy",
   "pandas",
-  "scikit-learn",
   "seaborn",
   # for debug logging (referenced from the issue template)
   "session-info",
@@ -71,6 +70,8 @@ optional-dependencies.dev = [
   "sphinxext-opengraph",
   "twine>=4.0.2",
 ]
+optional-dependencies.sklearn = [ "scikit-learn" ]
+
 # https://docs.pypi.org/project_metadata/#project-urls
 urls.Documentation = "https://pyclustree.readthedocs.io/"
 urls.Homepage = "https://github.com/complextissue/pyclustree"

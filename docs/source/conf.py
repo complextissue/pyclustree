@@ -90,6 +90,8 @@ intersphinx_mapping = dict(  # noqa: C408
     pandas=("https://pandas.pydata.org/pandas-docs/stable/", None),
     xarray=("https://docs.xarray.dev/en/stable/", None),
     python=("https://docs.python.org/3", None),
+    anndata=("https://anndata.readthedocs.io/en/latest/", None),
+    matplotlib=("https://matplotlib.org/stable", None),
 )
 
 # -- Options for HTML output -------------------------------------------------
