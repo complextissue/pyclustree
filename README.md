@@ -11,7 +11,7 @@
 Visualize cluster assignments at different resolutions. Possbile applications include finding the optimal resolution for
 single-cell RNA-sequencing clusterings.
 
-`pyclustree` is inspired by the R package `clustree`, however, while we aim to provide the same functionality, the API
+`pyclustree` is inspired by the R package `clustree` ([Github repository](https://github.com/lazappi/clustree)), however, while we aim to provide the same functionality, the API
 will differ between the implementations.
 
 ## Getting started

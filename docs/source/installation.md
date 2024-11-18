@@ -19,6 +19,13 @@ Install `pyclustree` package using `pip`:
 pip install pyclustree
 ```
 
+For scoring of clusters functions from the `scikit-learn` package are used. To install `pyclustree` with this optional
+dependency use the following `pip` command:
+
+```bash
+pip install "pyclustree[sklearn]"
+```
+
 :::
 
 :::{tab-item} Source

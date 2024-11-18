@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import pytest
 import scanpy as sc
 
 import pyclustree
@@ -61,3 +62,31 @@ def test_scatter_reference():
     )
 
     assert isinstance(fig, plt.Figure), "pyclustree should return a matplotlib Figure object."
+
+    # Testing errorhandling
+
+    # Testing none existing gene fo node color
+    with pytest.raises(AssertionError):
+        clustree(
+            adata,
+            [f"leiden_{str(resolution).replace('.', '_')}" for resolution in [0.2, 1.0]],
+            node_color_gene="Non-existing gene",
+        )
+
+    with pytest.raises(AssertionError):
+        clustree(
+            adata,
+            [f"leiden_{str(resolution).replace('.', '_')}" for resolution in [0.2, 1.0]],
+            node_color_gene="Non-existing gene",
+            node_color_gene_use_raw=False,
+        )
+
+    # Testing node colormap argument
+    with pytest.raises(AssertionError):
+        cluster_keys = [f"leiden_{str(resolution).replace('.', '_')}" for resolution in [0.2, 1.0]]
+        clustree(adata, cluster_keys, node_colormap=["#FF0000"] * (len(cluster_keys) + 1))
+
+    # Testing node_color_gene when node colormap argument is provided
+    with pytest.raises(AssertionError):
+        cluster_keys = [f"leiden_{str(resolution).replace('.', '_')}" for resolution in [0.2, 1.0]]
+        clustree(adata, cluster_keys, node_colormap=["#FF0000"] * len(cluster_keys), node_color_gene="CD8A")

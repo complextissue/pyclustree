@@ -26,11 +26,21 @@ jobs:
           - os: ubuntu-latest
             python: "3.9"
           - os: ubuntu-latest
+            python: "3.10"
+          - os: ubuntu-latest
+            python: "3.11"
+          - os: ubuntu-latest
             python: "3.12"
           - os: ubuntu-latest
             python: "3.12"
             pip-flags: "--pre"
             name: PRE-RELEASE DEPENDENCIES
+          # - os: ubuntu-latest
+          #   python: "3.13"
+          # - os: ubuntu-latest
+          #   python: "3.13"
+          #   pip-flags: "--pre"
+          #   name: PRE-RELEASE DEPENDENCIES
 
     name: ${{ matrix.name }} Python ${{ matrix.python }}
 
@@ -39,9 +49,9 @@ jobs:
       PYTHON: ${{ matrix.python }}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Python ${{ matrix.python }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
           cache: "pip"
@@ -52,7 +62,7 @@ jobs:
           python -m pip install --upgrade pip wheel
       - name: Install dependencies
         run: |
-          pip install ${{ matrix.pip-flags }} ".[dev,test]"
+          pip install ${{ matrix.pip-flags }} ".[dev,sklearn]"
       - name: Test
         env:
           MPLBACKEND: agg
