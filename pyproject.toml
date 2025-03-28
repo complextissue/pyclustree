@@ -5,7 +5,7 @@ requires = [ "flit-core>=3.4,<4" ]
 
 [project]
 name = "pyclustree"
-version = "0.3.2"
+version = "0.4.0"
 description = "Visualize cluster assignments at different resolutions"
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -69,6 +69,7 @@ optional-dependencies.dev = [
   "sphinxcontrib-bibtex>=1",
   "sphinxext-opengraph",
   "twine>=4.0.2",
+  "types-networkx",
 ]
 optional-dependencies.sklearn = [ "scikit-learn" ]
 
@@ -123,7 +124,7 @@ lint.pydocstyle.convention = "google"
 log_format = "%(asctime)s %(levelname)s %(message)s"
 log_date_format = "%Y-%m-%d %H:%M:%S"
 log_level = "WARN"
-log_cli = "true"
+log_cli = true
 testpaths = [ "tests" ]
 xfail_strict = true
 addopts = [

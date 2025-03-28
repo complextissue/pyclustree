@@ -1,12 +1,12 @@
 from logging import warning
-from typing import Callable, Optional, Literal, Union
+from typing import Callable, Literal, Optional, Union
 
 import networkx as nx
 import numpy as np
 from anndata import AnnData
-from numpy.typing import ArrayLike, NDArray
 from matplotlib import pyplot as plt
 from matplotlib.colors import Colormap
+from numpy.typing import ArrayLike, NDArray
 
 from pyclustree._utils import calculate_transition_matrix, order_unique_clusters
 
@@ -19,7 +19,7 @@ def clustree(
     node_colormap: Union[list[Colormap], Colormap, str] = "tab20",
     node_color_gene: Optional[str] = None,
     node_color_gene_use_raw: bool = True,
-    node_color_gene_transformer: Optional[callable] = None,
+    node_color_gene_transformer: Optional[Callable] = None,
     node_size_range: tuple[float, float] = (100, 1000),
     edge_width_range: tuple[float, float] = (0.5, 5.0),
     edge_weight_threshold: float = 0.0,
@@ -30,7 +30,10 @@ def clustree(
     show_fraction: bool = False,
     show_cluster_keys: bool = True,
     score_clustering: Optional[
-        Union[Literal["silhouette", "davies_bouldin", "calinski_harabasz"], Callable[[ArrayLike, ArrayLike], float]]
+        Union[
+            Literal["silhouette", "davies_bouldin", "calinski_harabasz"],
+            Callable[[ArrayLike, ArrayLike], float],
+        ]
     ] = None,
     score_basis: Literal["X", "raw", "pca"] = "pca",
     graph_plot_kwargs: Optional[dict] = None,
@@ -132,7 +135,8 @@ def clustree(
 
     transition_matrices = [
         calculate_transition_matrix(
-            df_cluster_assignments[cluster_keys[i]], df_cluster_assignments[cluster_keys[i + 1]]
+            df_cluster_assignments[cluster_keys[i]],
+            df_cluster_assignments[cluster_keys[i + 1]],
         )
         for i in range(len(cluster_keys) - 1)
     ]
@@ -144,7 +148,7 @@ def clustree(
         unique_clusters = order_unique_clusters(unique_clusters, transition_matrices)
 
     # Create the Graph
-    G = nx.DiGraph()
+    G: nx.Graph = nx.DiGraph()
 
     # Add the nodes for each cluster key (unique clusters)
     node_names = []
@@ -152,9 +156,12 @@ def clustree(
     for i, key in enumerate(cluster_keys):
         level_nodes = [f"{key}_{cluster_name}" for cluster_name in unique_clusters[i]]
         node_names.append(level_nodes)
-        level_nodes = reversed(level_nodes)
+        level_nodes.reverse()
 
-        G.add_nodes_from([node for nodes in node_names for node in level_nodes], layer=len(cluster_keys) - i)
+        G.add_nodes_from(
+            [node for nodes in node_names for node in level_nodes],
+            layer=len(cluster_keys) - i,
+        )
 
     # Add edges between each level and the next level
     for i, transition_matrix in enumerate(transition_matrices):
@@ -258,7 +265,7 @@ def clustree(
         gene_min, gene_max = np.min(gene_cluster_means), np.max(gene_cluster_means)
         norm_gene = plt.Normalize(vmin=gene_min, vmax=gene_max)
 
-        node_colors = [node_colormap(norm_gene(gene_cluster_mean)) for gene_cluster_mean in gene_cluster_means]
+        node_colors = [node_colormap(norm_gene(gene_cluster_mean)) for gene_cluster_mean in gene_cluster_means]  # type: ignore
 
         for i, key in enumerate(cluster_keys):
             index = sum([len(unique_clusters[k]) for k in range(i)])
@@ -271,13 +278,19 @@ def clustree(
         for cluster in unique_clusters[i]:
             node_sizes.append(np.sum(df_cluster_assignments[cluster_keys[i]] == cluster))
 
-    node_sizes = np.clip((np.array(node_sizes) * node_size_range[1]) / np.max(node_sizes), *node_size_range)
+    node_sizes = np.clip(
+        (np.array(node_sizes) * node_size_range[1]) / np.max(node_sizes),
+        *node_size_range,
+    )
 
     # Scale the edge width based on the edge weight
     edge_widths = [G.edges[edge]["weight"] for edge in G.edges]
 
     # Set the maximum edge width to be the maximum and clip the values to be within the range
-    edge_widths = np.clip((np.array(edge_widths) * edge_width_range[1]) / np.max(edge_widths), *edge_width_range)
+    edge_widths = np.clip(
+        (np.array(edge_widths) * edge_width_range[1]) / np.max(edge_widths),
+        *edge_width_range,
+    )
 
     figsize = x_spacing * len(cluster_keys), y_spacing * len(unique_clusters[0])
     fig, ax = plt.subplots(figsize=figsize, dpi=300)
@@ -301,7 +314,7 @@ def clustree(
         "with_labels": True,
         "labels": {node: node.split("_")[-1] for node in G.nodes},
         "pos": node_positions,
-        "node_color": [G.nodes[node]["color"] for node in G.nodes] if node_color_gene is not None else node_colors,
+        "node_color": ([G.nodes[node]["color"] for node in G.nodes] if node_color_gene is not None else node_colors),
         "edge_color": "black",
         "width": edge_widths,
         "font_size": 8,
@@ -351,7 +364,15 @@ def clustree(
             sm = plt.cm.ScalarMappable(cmap=node_colormap, norm=norm)
         sm.set_array([])
         label = f"{node_color_gene} expression" if node_color_gene is not None else "Cluster color"
-        colorbar = fig.colorbar(sm, ax=ax, orientation="vertical", fraction=0.02, pad=0.02, label=label, aspect=10)
+        colorbar = fig.colorbar(
+            sm,
+            ax=ax,
+            orientation="vertical",
+            fraction=0.02,
+            pad=0.02,
+            label=label,
+            aspect=10,
+        )
         colorbar.ax.yaxis.set_label_position("left")
     elif show_colorbar and isinstance(node_colormap, list):
         warning("Colorbars are not supported when providing a list of colormaps. Ignoring the argument.")
@@ -359,7 +380,9 @@ def clustree(
     if score_clustering is not None or (show_cluster_keys is True and scatter_reference is not None):
         # Position them in equal intervals along the y-axis
         y_positions_levels = np.linspace(
-            ax.get_ylim()[1], ax.get_ylim()[1] - len(cluster_keys) * 1.0, len(cluster_keys)
+            ax.get_ylim()[1],
+            ax.get_ylim()[1] - len(cluster_keys) * 1.0,
+            len(cluster_keys),
         )
 
     # Show the name of the cluster key on the left side of the plot
@@ -368,13 +391,14 @@ def clustree(
 
         if scatter_reference is not None:
             # Use the level colors for the facecolor
+            facecolor: Union[list[str], list[tuple[float, float, float, float]]] = []
             if isinstance(node_colormap, list):
                 warning("Cannot show colored cluster keys when providing a list of colormaps. Showing white keys.")
                 facecolor = ["white"] * len(cluster_keys)
             else:
                 facecolor = [node_colormap(norm(i)) for i in range(len(cluster_keys))]
         else:
-            y_positions_levels = [node_positions[node_names[i][0]][1] for i in range(len(node_names))]
+            y_positions_levels = [node_positions[node_names[i][0]][1] for i in range(len(node_names))]  # type: ignore
             facecolor = ["white"] * len(cluster_keys)
 
         for i, key in enumerate(cluster_keys):
@@ -390,7 +414,11 @@ def clustree(
                 color="black",
                 ha="center",
                 va="center",
-                bbox={"boxstyle": "round", "facecolor": facecolor[i], "edgecolor": "black"},
+                bbox={
+                    "boxstyle": "round",
+                    "facecolor": facecolor[i],
+                    "edgecolor": "black",
+                },
             )
 
     # Set the title of the plot
@@ -433,7 +461,9 @@ def clustree(
                     else:
                         raise ValueError(f"Score '{score_clustering}' not a valid scoring method")
                 elif callable(score_clustering) is True:
-                    score_array[index] = float(score_clustering(basis, adata.obs[cluster_key]))
+                    score_array[index] = float(
+                        score_clustering(basis, adata.obs[cluster_key])  # type: ignore
+                    )
 
         score_name_map = {
             "silhouette": "Silhouette score",
@@ -446,7 +476,7 @@ def clustree(
         ax.text(
             x_max,
             y=ax.get_ylim()[1],
-            s=score_name_map[score_clustering],
+            s=score_name_map[score_clustering],  # type: ignore
             fontsize=12,
             color="black",
             ha="center",
@@ -458,11 +488,15 @@ def clustree(
             ax.text(
                 x_max,
                 y=y_positions_levels[i],
-                s=str(round(score_array[i], 2)),
+                s=str(round(score_array[i], 2)),  # type: ignore
                 fontsize=12,
                 ha="center",
                 va="center",
-                bbox={"boxstyle": "round", "facecolor": facecolor[i], "edgecolor": "black"},
+                bbox={
+                    "boxstyle": "round",
+                    "facecolor": facecolor[i],
+                    "edgecolor": "black",
+                },
             )
 
     return fig

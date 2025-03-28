@@ -13,7 +13,7 @@ sys.path.insert(0, os.path.abspath("../../pyclustree"))
 # -- Project information -----------------------------------------------------
 
 project = "pyclustree"
-copyright = "2024, Malte Kuehl"
+copyright = "2025, Malte Kuehl"
 author = "Malte Kuehl"
 
 # -- General configuration ---------------------------------------------------

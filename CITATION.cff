@@ -8,6 +8,6 @@ authors:
     - family-names: "Puelles"
       given-names: "Victor G."
 title: "pyclustree: Visualizing cluster resolution optimization for biomedical data"
-version: 0.3.1
-date-released: 2024-10-24
+version: 0.4.0
+date-released: 2025-03-28
 url: "https://zenodo.org/records/13987570"

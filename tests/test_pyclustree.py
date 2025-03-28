@@ -89,4 +89,9 @@ def test_scatter_reference():
     # Testing node_color_gene when node colormap argument is provided
     with pytest.raises(AssertionError):
         cluster_keys = [f"leiden_{str(resolution).replace('.', '_')}" for resolution in [0.2, 1.0]]
-        clustree(adata, cluster_keys, node_colormap=["#FF0000"] * len(cluster_keys), node_color_gene="CD8A")
+        clustree(
+            adata,
+            cluster_keys,
+            node_colormap=["#FF0000"] * len(cluster_keys),
+            node_color_gene="CD8A",
+        )
