@@ -8,7 +8,7 @@ from matplotlib import pyplot as plt
 from matplotlib.colors import Colormap
 from numpy.typing import ArrayLike, NDArray
 
-from pyclustree._utils import calculate_transition_matrix, order_unique_clusters
+from ._utils import calculate_clustering_score, calculate_transition_matrix, order_unique_clusters
 
 
 def clustree(
@@ -150,67 +150,47 @@ def clustree(
     # Create the Graph
     G: nx.Graph = nx.DiGraph()
 
-    # Add the nodes for each cluster key (unique clusters)
-    node_names = []
-
+    # Add the nodes and store cluster info directly in the graph
     for i, key in enumerate(cluster_keys):
-        level_nodes = [f"{key}_{cluster_name}" for cluster_name in unique_clusters[i]]
-        node_names.append(level_nodes)
-        level_nodes.reverse()
+        for cluster in reversed(unique_clusters[i]):
+            node_name = f"{key}_{cluster}"
+            cluster_cells = df_cluster_assignments[key] == cluster
+            node_size = np.sum(cluster_cells)
 
-        G.add_nodes_from(
-            [node for nodes in node_names for node in level_nodes],
-            layer=len(cluster_keys) - i,
+            # Store info directly in the node
+            G.add_node(
+                node_name,
+                layer=len(cluster_keys) - i,
+                level=i,
+                key=key,
+                cluster=cluster,
+                size=node_size,
+                cells=cluster_cells,
+            )
+
+    # Compute node sizes scaled to the desired range
+    max_size = max(G.nodes[node]["size"] for node in G.nodes)
+    for node in G.nodes:
+        G.nodes[node]["display_size"] = np.clip(
+            (G.nodes[node]["size"] * node_size_range[1]) / max_size,
+            *node_size_range,
         )
 
     # Add edges between each level and the next level
     for i, transition_matrix in enumerate(transition_matrices):
         for parent_cluster in transition_matrix.index:
+            parent_node = f"{cluster_keys[i]}_{parent_cluster}"
+
             for child_cluster in transition_matrix.columns:
+                child_node = f"{cluster_keys[i + 1]}_{child_cluster}"
                 weight = transition_matrix.loc[parent_cluster, child_cluster]
 
                 if weight > edge_weight_threshold:
-                    G.add_edge(
-                        f"{cluster_keys[i]}_{parent_cluster}",
-                        f"{cluster_keys[i + 1]}_{child_cluster}",
-                        weight=weight,
-                    )
+                    G.add_edge(parent_node, child_node, weight=weight)
 
-    # Calculate the positions of the nodes
-    node_positions = {}
-    for i in range(len(cluster_keys)):
-        if scatter_reference is not None:
-            # Get the median x and y positions of the scatter reference for each cluster
-            x_positions = adata.obsm[scatter_reference][:, 0]
-            y_positions = adata.obsm[scatter_reference][:, 1]
-
-            cluster_positions = {
-                cluster: (
-                    np.median(x_positions[df_cluster_assignments[cluster_keys[i]] == cluster]),
-                    np.median(y_positions[df_cluster_assignments[cluster_keys[i]] == cluster]),
-                )
-                for cluster in unique_clusters[i]
-            }
-
-            node_positions.update(
-                {
-                    f"{cluster_keys[i]}_{cluster}": (
-                        cluster_positions[cluster][0],
-                        cluster_positions[cluster][1],
-                    )
-                    for j, cluster in enumerate(unique_clusters[i])
-                }
-            )
-
-    # Use the provided colormap to color the nodes
-    node_levels = [[i] * len(unique_clusters[i]) for i in range(len(unique_clusters))]
-    node_levels_flat = [item for sublist in node_levels for item in sublist]
-    norm = plt.Normalize(vmin=0, vmax=len(np.unique(node_levels_flat)) - 1)
-
-    if not isinstance(node_colormap, list):
-        node_colors = [node_colormap(norm(value)) for value in node_levels_flat]
-    else:
-        # Ensure that the length of the list corresponds to the number of clusterings
+    # Prepare node colors
+    if isinstance(node_colormap, list):
+        # Multiple colormaps for different levels
         assert len(node_colormap) == len(
             cluster_keys
         ), "The length of the colormap list should match the number of cluster keys."
@@ -218,22 +198,19 @@ def clustree(
             node_color_gene is None
         ), "The node_color_gene argument is not supported when providing a list of colormaps."
 
-        node_colors = []
-        for i in range(len(cluster_keys)):
-            node_colormap_level = (
-                plt.cm.get_cmap(node_colormap[i]) if isinstance(node_colormap[i], str) else node_colormap[i]
+        # Apply appropriate colormap to each node based on its level
+        for node in G.nodes:
+            level = G.nodes[node]["level"]
+            cluster = G.nodes[node]["cluster"]
+            cmap_level = (
+                plt.cm.get_cmap(node_colormap[level]) if isinstance(node_colormap[level], str) else node_colormap[level]
             )
-            norm_level = plt.Normalize(vmin=0, vmax=len(unique_clusters[i]) - 1)
+            norm_level = plt.Normalize(vmin=0, vmax=len(unique_clusters[level]) - 1)
+            color_idx = unique_clusters_sorted[level].index(cluster)
+            G.nodes[node]["color"] = cmap_level(norm_level(color_idx))
 
-            node_colors.extend(
-                [
-                    node_colormap_level(norm_level(unique_clusters_sorted[i].index(unique_cluster)))
-                    for unique_cluster in unique_clusters[i]
-                ]
-            )
-
-    # If a node color gene is provided, use the expression of the gene to color the nodes
-    if node_color_gene is not None:
+    elif node_color_gene is not None:
+        # Color nodes by gene expression
         # Get the expression values for the specified gene
         if node_color_gene in adata.obs.columns:
             gene_counts = adata.obs[node_color_gene].values
@@ -242,57 +219,62 @@ def clustree(
                 raise ValueError(
                     "The raw data is not available. Please set `node_color_gene_use_raw` to False or provide raw data."
                 )
-
             gene_counts = adata.raw.X[:, adata.raw.var_names == node_color_gene]
         else:
             gene_counts = adata.X[:, adata.var_names == node_color_gene]
 
-        # Flatten gene_counts if it's 2D (i.e., n_cells x 1)
+        # Flatten gene_counts if it's 2D
         gene_counts = gene_counts.toarray().flatten() if hasattr(gene_counts, "toarray") else gene_counts.flatten()
 
-        # Compute median expression of the gene for each cluster
-        node_color_gene_transformer = np.mean if node_color_gene_transformer is None else node_color_gene_transformer
-        gene_cluster_means = []
-        for i, key in enumerate(cluster_keys):
-            for cluster in unique_clusters[i]:
-                gene_cluster_means.append(
-                    np.nan_to_num(
-                        node_color_gene_transformer(gene_counts[df_cluster_assignments[key] == cluster]),
-                        nan=0,
-                    )
-                )
+        # Apply transformer to get expression value per cluster
+        transformer = np.mean if node_color_gene_transformer is None else node_color_gene_transformer
 
-        gene_min, gene_max = np.min(gene_cluster_means), np.max(gene_cluster_means)
+        # Calculate expression for each node
+        gene_values = {}
+        for node in G.nodes:
+            cells = G.nodes[node]["cells"]
+            gene_values[node] = np.nan_to_num(transformer(gene_counts[cells]), nan=0)
+
+        # Create color normalization
+        gene_min, gene_max = min(gene_values.values()), max(gene_values.values())
         norm_gene = plt.Normalize(vmin=gene_min, vmax=gene_max)
 
-        node_colors = [node_colormap(norm_gene(gene_cluster_mean)) for gene_cluster_mean in gene_cluster_means]  # type: ignore
+        # Assign colors
+        for node in G.nodes:
+            G.nodes[node]["color"] = node_colormap(norm_gene(gene_values[node]))
 
-        for i, key in enumerate(cluster_keys):
-            index = sum([len(unique_clusters[k]) for k in range(i)])
-            for j, cluster in enumerate(unique_clusters[i]):
-                G.nodes[f"{key}_{cluster}"]["color"] = node_colors[j + index]
+    else:
+        # Single colormap for all nodes based on level
+        norm = plt.Normalize(vmin=0, vmax=len(cluster_keys) - 1)
+        for node in G.nodes:
+            G.nodes[node]["color"] = node_colormap(norm(G.nodes[node]["level"]))
 
-    # Scale the node size based on the number of cells in each cluster
-    node_sizes = []
-    for i in range(len(cluster_keys)):
-        for cluster in unique_clusters[i]:
-            node_sizes.append(np.sum(df_cluster_assignments[cluster_keys[i]] == cluster))
+    # Calculate the positions of the nodes
+    if scatter_reference is not None:
+        # Get the median x and y positions of the scatter reference for each cluster
+        x_positions = adata.obsm[scatter_reference][:, 0]
+        y_positions = adata.obsm[scatter_reference][:, 1]
 
-    node_sizes = np.clip(
-        (np.array(node_sizes) * node_size_range[1]) / np.max(node_sizes),
-        *node_size_range,
-    )
+        node_positions = {}
+        for node in G.nodes:
+            cells = G.nodes[node]["cells"]
+            node_positions[node] = (np.median(x_positions[cells]), np.median(y_positions[cells]))
+    else:
+        node_positions = nx.multipartite_layout(G, align="horizontal", subset_key="layer", scale=1.0)
 
-    # Scale the edge width based on the edge weight
-    edge_widths = [G.edges[edge]["weight"] for edge in G.edges]
+    # Prepare edge widths scaled to desired range
+    edge_weights = [G.edges[edge]["weight"] for edge in G.edges]
+    if edge_weights:  # Only scale if there are edges
+        max_weight = max(edge_weights)
+        edge_widths = np.clip(
+            (np.array(edge_weights) * edge_width_range[1]) / max_weight,
+            *edge_width_range,
+        )
+    else:
+        edge_widths = []
 
-    # Set the maximum edge width to be the maximum and clip the values to be within the range
-    edge_widths = np.clip(
-        (np.array(edge_widths) * edge_width_range[1]) / np.max(edge_widths),
-        *edge_width_range,
-    )
-
-    figsize = x_spacing * len(cluster_keys), y_spacing * len(unique_clusters[0])
+    # Create the plot
+    figsize = (x_spacing * len(cluster_keys), y_spacing * len(unique_clusters[0]))
     fig, ax = plt.subplots(figsize=figsize, dpi=300)
 
     # Plot the scatter reference if provided
@@ -305,22 +287,19 @@ def clustree(
             s=10,
         )
 
-    if scatter_reference is None:
-        node_positions = nx.multipartite_layout(G, align="horizontal", subset_key="layer", scale=1.0)
-
-    # Draw the graph
+    # Prepare graph drawing parameters
     graph_plot_kwargs_base = {
         "G": G,
         "with_labels": True,
-        "labels": {node: node.split("_")[-1] for node in G.nodes},
+        "labels": {node: G.nodes[node]["cluster"] for node in G.nodes},
         "pos": node_positions,
-        "node_color": ([G.nodes[node]["color"] for node in G.nodes] if node_color_gene is not None else node_colors),
+        "node_size": [G.nodes[node]["display_size"] for node in G.nodes],
+        "node_color": [G.nodes[node]["color"] for node in G.nodes],
         "edge_color": "black",
         "width": edge_widths,
         "font_size": 8,
         "font_color": "white",
         "font_weight": "bold",
-        "node_size": node_sizes,
         "edge_vmin": 0,
         "edge_vmax": 1,
         "arrowsize": 10,
@@ -330,21 +309,17 @@ def clustree(
     if graph_plot_kwargs is not None:
         graph_plot_kwargs_base.update(graph_plot_kwargs)
 
-    nx.draw(
-        **graph_plot_kwargs_base,
-    )
+    # Draw the graph
+    nx.draw(**graph_plot_kwargs_base)
 
+    # Add edge labels if requested
     if show_fraction:
-        edge_labels = nx.get_edge_attributes(G, "weight")
-        formatted_edge_labels = {}
-        for edge_label in zip(edge_labels.keys(), edge_labels.values()):
-            formatted_edge_labels[edge_label[0]] = f"{np.round(edge_label[1], 2)}"
-
+        edge_labels = {edge: f"{weight:.2f}" for edge, weight in nx.get_edge_attributes(G, "weight").items()}
         nx.draw_networkx_edge_labels(
             G,
             node_positions,
             label_pos=0.4,
-            edge_labels=formatted_edge_labels,
+            edge_labels=edge_labels,
             font_size=6,
             rotate=False,
             alpha=0.8,
@@ -359,9 +334,14 @@ def clustree(
     # Plot the colorbar
     if show_colorbar and not isinstance(node_colormap, list):
         if node_color_gene is not None:
-            sm = plt.cm.ScalarMappable(cmap=node_colormap, norm=norm_gene)
+            # For gene expression, use the gene value min/max
+            gene_min, gene_max = min(gene_values.values()), max(gene_values.values())
+            norm_for_colorbar = plt.Normalize(vmin=gene_min, vmax=gene_max)
         else:
-            sm = plt.cm.ScalarMappable(cmap=node_colormap, norm=norm)
+            # For clustering levels
+            norm_for_colorbar = plt.Normalize(vmin=0, vmax=len(cluster_keys) - 1)
+
+        sm = plt.cm.ScalarMappable(cmap=node_colormap, norm=norm_for_colorbar)
         sm.set_array([])
         label = f"{node_color_gene} expression" if node_color_gene is not None else "Cluster color"
         colorbar = fig.colorbar(
@@ -377,38 +357,49 @@ def clustree(
     elif show_colorbar and isinstance(node_colormap, list):
         warning("Colorbars are not supported when providing a list of colormaps. Ignoring the argument.")
 
-    if score_clustering is not None or (show_cluster_keys is True and scatter_reference is not None):
-        # Position them in equal intervals along the y-axis
+    # Calculate positions for cluster keys and scores
+    need_level_positions = score_clustering is not None or (show_cluster_keys and scatter_reference is not None)
+    y_positions_levels: Union[NDArray[np.float64], list[float]]
+    if need_level_positions:
         y_positions_levels = np.linspace(
             ax.get_ylim()[1],
             ax.get_ylim()[1] - len(cluster_keys) * 1.0,
             len(cluster_keys),
         )
 
-    # Show the name of the cluster key on the left side of the plot
+    # Show the name of the cluster key and scores
     if show_cluster_keys:
         x_min = ax.get_xlim()[0] if scatter_reference is None else ax.get_xlim()[1] + 2
 
-        if scatter_reference is not None:
-            # Use the level colors for the facecolor
-            facecolor: Union[list[str], list[tuple[float, float, float, float]]] = []
+        # Determine y positions and colors
+        facecolor: Union[list[str], list[tuple[float, float, float, float]]]
+        if scatter_reference is None:
+            # Use node positions for y-coordinates in hierarchical layout
+            level_nodes: dict[int, list[str]] = {}
+            for node in G.nodes:
+                level = G.nodes[node]["level"]
+                if level not in level_nodes:
+                    level_nodes[level] = []
+                level_nodes[level].append(node)
+
+            y_positions_levels = [
+                max(node_positions[node][1] for node in level_nodes.get(i, [])) for i in range(len(cluster_keys))
+            ]
+            facecolor = ["white"] * len(cluster_keys)
+        else:
+            # Use previously calculated y positions for scatter layout
             if isinstance(node_colormap, list):
                 warning("Cannot show colored cluster keys when providing a list of colormaps. Showing white keys.")
                 facecolor = ["white"] * len(cluster_keys)
             else:
+                norm = plt.Normalize(vmin=0, vmax=len(cluster_keys) - 1)
                 facecolor = [node_colormap(norm(i)) for i in range(len(cluster_keys))]
-        else:
-            y_positions_levels = [node_positions[node_names[i][0]][1] for i in range(len(node_names))]  # type: ignore
-            facecolor = ["white"] * len(cluster_keys)
 
+        # Add text labels for cluster keys
         for i, key in enumerate(cluster_keys):
-            x = x_min - 0.5
-            y = y_positions_levels[i]
-
-            # plot on top of a rounded rectangle in the color of the node
             ax.text(
-                x,
-                y,
+                x_min - 0.5,
+                y_positions_levels[i],
                 key,
                 fontsize=12,
                 color="black",
@@ -425,70 +416,38 @@ def clustree(
     if title is not None:
         ax.set_title(title, fontsize=16, fontweight="bold", pad=10)
 
+    # Add clustering scores
     if score_clustering is not None:
-        # Generate score array
-        score_array: Optional[list[Optional[float]]] = None
+        # Calculate scores
+        scores = [calculate_clustering_score(adata, key, score_clustering, score_basis) for key in cluster_keys]
 
-        if score_clustering is not None:
-            score_array = [None] * len(cluster_keys)
-            for index, cluster_key in enumerate(cluster_keys):
-                # Assign basis for scoring
-                basis: Optional[NDArray] = None
-
-                if score_basis == "X":
-                    basis = adata.X.copy()
-                elif score_basis == "pca":
-                    basis = adata.obsm["X_pca"].copy()
-                elif score_basis == "raw":
-                    basis = adata.raw.X.copy()
-
-                assert basis is not None, f"Can't score clustering on basis '{score_basis}'"
-
-                # Assign scoring function
-                if isinstance(score_clustering, str) is True:
-                    if score_clustering == "calinski_harabasz":
-                        from sklearn.metrics import calinski_harabasz_score
-
-                        score_array[index] = float(calinski_harabasz_score(X=basis, labels=adata.obs[cluster_key]))
-                    elif score_clustering == "davies_bouldin":
-                        from sklearn.metrics import davies_bouldin_score
-
-                        score_array[index] = float(davies_bouldin_score(X=basis, labels=adata.obs[cluster_key]))
-                    elif score_clustering == "silhouette":
-                        from sklearn.metrics import silhouette_score
-
-                        score_array[index] = float(silhouette_score(X=basis, labels=adata.obs[cluster_key]))
-                    else:
-                        raise ValueError(f"Score '{score_clustering}' not a valid scoring method")
-                elif callable(score_clustering) is True:
-                    score_array[index] = float(
-                        score_clustering(basis, adata.obs[cluster_key])  # type: ignore
-                    )
-
+        # Map score names for display
         score_name_map = {
             "silhouette": "Silhouette score",
             "calinski_harabasz": "Calinski and Harabasz score",
             "davies_bouldin": "Davies-Bouldin score",
         }
 
+        # Add score title
         x_max = ax.get_xlim()[1] + 0.5
+        score_title = score_name_map[score_clustering] if isinstance(score_clustering, str) else "Clustering score"
 
         ax.text(
             x_max,
             y=ax.get_ylim()[1],
-            s=score_name_map[score_clustering],  # type: ignore
+            s=score_title,
             fontsize=12,
             color="black",
             ha="center",
             va="center",
         )
 
-        for i in range(len(cluster_keys)):
-            # Annotate cluster scores
+        # Display scores
+        for i, score in enumerate(scores):
             ax.text(
                 x_max,
                 y=y_positions_levels[i],
-                s=str(round(score_array[i], 2)),  # type: ignore
+                s=f"{score:.2f}",
                 fontsize=12,
                 ha="center",
                 va="center",
