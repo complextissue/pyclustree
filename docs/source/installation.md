@@ -3,7 +3,7 @@
 :::{card}
 :class-card: sd-bg-warning
 :class-body: sd-bg-text-warning
-**pyclustree** only supports Python versions greater than or equal to **3.9**.
+**pyclustree** only supports Python versions greater than or equal to **3.10**.
 :::
 
 ## Installation Options
@@ -35,7 +35,7 @@ Install `pyclustree` from source:
 # Clone repo
 git clone --depth 1 https://github.com/complextissue/pyclustree.git
 cd pyclustree
-pyenv global 3.9
+pyenv global 3.10
 make create-venv
 source .venv/bin/activate
 make install

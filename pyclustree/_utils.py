@@ -1,11 +1,12 @@
-from typing import Callable, Literal, Optional, Union
+from collections.abc import Callable
+from typing import Literal
 
 import pandas as pd
 from anndata import AnnData
 from numpy.typing import ArrayLike, NDArray
 
 
-def calculate_transition_matrix(
+def transition_matrix(
     cluster_a: pd.Series,
     cluster_b: pd.Series,
 ) -> pd.DataFrame:
@@ -104,10 +105,8 @@ def order_unique_clusters(
 def calculate_clustering_score(
     adata: AnnData,
     cluster_key: str,
-    score_method: Union[
-        Literal["silhouette", "davies_bouldin", "calinski_harabasz"],
-        Callable[[ArrayLike, ArrayLike], float],
-    ],
+    score_method: Literal["silhouette", "davies_bouldin", "calinski_harabasz"]
+    | Callable[[ArrayLike, ArrayLike], float],
     score_basis: Literal["X", "raw", "pca"] = "pca",
 ) -> float:
     """Calculate clustering score using specified method and data basis.
@@ -127,7 +126,7 @@ def calculate_clustering_score(
         ValueError: If an invalid score method or basis is provided.
     """
     # Assign basis for scoring
-    basis: Optional[NDArray] = None
+    basis: NDArray | None = None
 
     if score_basis == "X":
         basis = adata.X.copy()

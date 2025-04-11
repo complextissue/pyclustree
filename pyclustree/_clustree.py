@@ -1,25 +1,25 @@
+from collections.abc import Callable
 from logging import warning
-from typing import Callable, Literal, Optional, Union
 
 import networkx as nx
 import numpy as np
 from anndata import AnnData
 from matplotlib import pyplot as plt
 from matplotlib.colors import Colormap
-from numpy.typing import ArrayLike, NDArray
+from numpy.typing import NDArray
 
-from ._utils import calculate_clustering_score, calculate_transition_matrix, order_unique_clusters
+from ._utils import order_unique_clusters, transition_matrix
 
 
 def clustree(
     adata: AnnData,
     cluster_keys: list[str],
-    title: Optional[str] = None,
-    scatter_reference: Optional[str] = None,
-    node_colormap: Union[list[Colormap], Colormap, str] = "tab20",
-    node_color_gene: Optional[str] = None,
+    title: str | None = None,
+    scatter_reference: str | None = None,
+    node_colormap: list[Colormap] | Colormap | str = "tab20",
+    node_color_gene: str | None = None,
     node_color_gene_use_raw: bool = True,
-    node_color_gene_transformer: Optional[Callable] = None,
+    node_color_gene_transformer: Callable | None = None,
     node_size_range: tuple[float, float] = (100, 1000),
     edge_width_range: tuple[float, float] = (0.5, 5.0),
     edge_weight_threshold: float = 0.0,
@@ -29,14 +29,7 @@ def clustree(
     show_colorbar: bool = False,
     show_fraction: bool = False,
     show_cluster_keys: bool = True,
-    score_clustering: Optional[
-        Union[
-            Literal["silhouette", "davies_bouldin", "calinski_harabasz"],
-            Callable[[ArrayLike, ArrayLike], float],
-        ]
-    ] = None,
-    score_basis: Literal["X", "raw", "pca"] = "pca",
-    graph_plot_kwargs: Optional[dict] = None,
+    graph_plot_kwargs: dict | None = None,
 ) -> plt.Figure:
     """Create a hierarchical clustering tree visualization to compare different clustering resolutions.
 
@@ -125,24 +118,27 @@ def clustree(
                 node_color_gene in adata.obs.columns or node_color_gene in adata.var_names
             ), "The provided gene should be present in the adata.var_names/adata.raw.var_names or adata.obs."
 
-    if scatter_reference is not None and score_clustering is not None:
-        raise ValueError("Cluster scoring is not supported for scatter plotting.")
-
     if isinstance(node_colormap, str):
         node_colormap = plt.get_cmap(node_colormap)
 
     df_cluster_assignments = adata.obs[cluster_keys]
 
     transition_matrices = [
-        calculate_transition_matrix(
+        transition_matrix(
             df_cluster_assignments[cluster_keys[i]],
             df_cluster_assignments[cluster_keys[i + 1]],
         )
         for i in range(len(cluster_keys) - 1)
     ]
 
+    def cluster_sort_key(cluster):
+        try:
+            return int(cluster)
+        except (ValueError, TypeError):
+            return str(cluster)
+
     unique_clusters = [np.unique(df_cluster_assignments[key]).tolist() for key in cluster_keys]
-    unique_clusters_sorted = [sorted(unique_clusters_level) for unique_clusters_level in unique_clusters]
+    unique_clusters = [sorted(unique_clusters_level, key=cluster_sort_key) for unique_clusters_level in unique_clusters]
 
     if order_clusters:
         unique_clusters = order_unique_clusters(unique_clusters, transition_matrices)
@@ -150,9 +146,11 @@ def clustree(
     # Create the Graph
     G: nx.Graph = nx.DiGraph()
 
+    layers: dict[str, list[str]] = {}
+
     # Add the nodes and store cluster info directly in the graph
     for i, key in enumerate(cluster_keys):
-        for cluster in reversed(unique_clusters[i]):
+        for cluster in unique_clusters[i]:
             node_name = f"{key}_{cluster}"
             cluster_cells = df_cluster_assignments[key] == cluster
             node_size = np.sum(cluster_cells)
@@ -160,13 +158,17 @@ def clustree(
             # Store info directly in the node
             G.add_node(
                 node_name,
-                layer=len(cluster_keys) - i,
                 level=i,
                 key=key,
                 cluster=cluster,
                 size=node_size,
                 cells=cluster_cells,
             )
+
+            layer_key = str(len(cluster_keys) - i)
+            if layer_key not in layers:
+                layers[layer_key] = []
+            layers[layer_key].append(node_name)
 
     # Compute node sizes scaled to the desired range
     max_size = max(G.nodes[node]["size"] for node in G.nodes)
@@ -177,13 +179,13 @@ def clustree(
         )
 
     # Add edges between each level and the next level
-    for i, transition_matrix in enumerate(transition_matrices):
-        for parent_cluster in transition_matrix.index:
+    for i, transition in enumerate(transition_matrices):
+        for parent_cluster in transition.index:
             parent_node = f"{cluster_keys[i]}_{parent_cluster}"
 
-            for child_cluster in transition_matrix.columns:
+            for child_cluster in transition.columns:
                 child_node = f"{cluster_keys[i + 1]}_{child_cluster}"
-                weight = transition_matrix.loc[parent_cluster, child_cluster]
+                weight = transition.loc[parent_cluster, child_cluster]
 
                 if weight > edge_weight_threshold:
                     G.add_edge(parent_node, child_node, weight=weight)
@@ -206,7 +208,7 @@ def clustree(
                 plt.cm.get_cmap(node_colormap[level]) if isinstance(node_colormap[level], str) else node_colormap[level]
             )
             norm_level = plt.Normalize(vmin=0, vmax=len(unique_clusters[level]) - 1)
-            color_idx = unique_clusters_sorted[level].index(cluster)
+            color_idx = unique_clusters[level].index(cluster)
             G.nodes[node]["color"] = cmap_level(norm_level(color_idx))
 
     elif node_color_gene is not None:
@@ -260,7 +262,12 @@ def clustree(
             cells = G.nodes[node]["cells"]
             node_positions[node] = (np.median(x_positions[cells]), np.median(y_positions[cells]))
     else:
-        node_positions = nx.multipartite_layout(G, align="horizontal", subset_key="layer", scale=1.0)
+        node_positions = nx.multipartite_layout(
+            G,
+            align="horizontal",
+            subset_key=layers,  # type: ignore
+            scale=1.0,
+        )
 
     # Prepare edge widths scaled to desired range
     edge_weights = [G.edges[edge]["weight"] for edge in G.edges]
@@ -358,8 +365,8 @@ def clustree(
         warning("Colorbars are not supported when providing a list of colormaps. Ignoring the argument.")
 
     # Calculate positions for cluster keys and scores
-    need_level_positions = score_clustering is not None or (show_cluster_keys and scatter_reference is not None)
-    y_positions_levels: Union[NDArray[np.float64], list[float]]
+    need_level_positions = show_cluster_keys and scatter_reference is not None
+    y_positions_levels: NDArray[np.float64] | list[float]
     if need_level_positions:
         y_positions_levels = np.linspace(
             ax.get_ylim()[1],
@@ -372,7 +379,7 @@ def clustree(
         x_min = ax.get_xlim()[0] if scatter_reference is None else ax.get_xlim()[1] + 2
 
         # Determine y positions and colors
-        facecolor: Union[list[str], list[tuple[float, float, float, float]]]
+        facecolor: list[str] | list[tuple[float, float, float, float]]
         if scatter_reference is None:
             # Use node positions for y-coordinates in hierarchical layout
             level_nodes: dict[int, list[str]] = {}
@@ -415,47 +422,5 @@ def clustree(
     # Set the title of the plot
     if title is not None:
         ax.set_title(title, fontsize=16, fontweight="bold", pad=10)
-
-    # Add clustering scores
-    if score_clustering is not None:
-        # Calculate scores
-        scores = [calculate_clustering_score(adata, key, score_clustering, score_basis) for key in cluster_keys]
-
-        # Map score names for display
-        score_name_map = {
-            "silhouette": "Silhouette score",
-            "calinski_harabasz": "Calinski and Harabasz score",
-            "davies_bouldin": "Davies-Bouldin score",
-        }
-
-        # Add score title
-        x_max = ax.get_xlim()[1] + 0.5
-        score_title = score_name_map[score_clustering] if isinstance(score_clustering, str) else "Clustering score"
-
-        ax.text(
-            x_max,
-            y=ax.get_ylim()[1],
-            s=score_title,
-            fontsize=12,
-            color="black",
-            ha="center",
-            va="center",
-        )
-
-        # Display scores
-        for i, score in enumerate(scores):
-            ax.text(
-                x_max,
-                y=y_positions_levels[i],
-                s=f"{score:.2f}",
-                fontsize=12,
-                ha="center",
-                va="center",
-                bbox={
-                    "boxstyle": "round",
-                    "facecolor": facecolor[i],
-                    "edgecolor": "black",
-                },
-            )
 
     return fig

@@ -14,7 +14,7 @@ maintainers = [
   { name = "Malte Kuehl", email = "malte.kuehl@clin.au.dk" },
 ]
 authors = [ { name = "Malte Hellmig" }, { name = "Malte Kuehl" } ]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Healthcare Industry",
@@ -23,7 +23,6 @@ classifiers = [
   "Natural Language :: English",
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
@@ -51,6 +50,7 @@ optional-dependencies.dev = [
   "myst-parser",
   "nbsphinx",
   "pandas",
+  "pandas-stubs",
   "pandoc",
   "pre-commit",
   "pytest",
