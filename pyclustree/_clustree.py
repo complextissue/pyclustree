@@ -1,5 +1,6 @@
 from collections.abc import Callable
 from logging import warning
+from typing import Literal
 
 import networkx as nx
 import numpy as np
@@ -30,6 +31,7 @@ def clustree(
     show_fraction: bool = False,
     show_cluster_keys: bool = True,
     graph_plot_kwargs: dict | None = None,
+    transition_plot: Literal["network", "sankey"] = "network",
 ) -> plt.Figure:
     """Create a hierarchical clustering tree visualization to compare different clustering resolutions.
 
@@ -94,10 +96,14 @@ def clustree(
         score_basis (typing.Literal["X", "raw", "pca"]): Features to use as basis to evaluate clustering.
         graph_plot_kwargs (Optional[dict], optional): Additional keyword arguments to pass to `nx.draw`. Will override
             the default arguments. Defaults to None.
+        transition_plot (Literal["network", "sankey"], optional): Type of plot. Defaults to `"network"`.
 
     Returns:
         plt.Figure: The matplotlib figure object of the clustree visualization.
     """
+    if transition_plot == "sankey":
+        assert scatter_reference is None, "'scatter_reference' not supported when using sankey plot."
+
     # Ensure all cluster keys are present in adata.obs
     assert all(key in adata.obs for key in cluster_keys), "All cluster keys should be present in adata.obs."
 

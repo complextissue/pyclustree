@@ -17,6 +17,7 @@ authors = [ { name = "Malte Hellmig" }, { name = "Malte Kuehl" } ]
 requires-python = ">=3.10"
 classifiers = [
   "Development Status :: 3 - Alpha",
+  "Framework :: Matplotlib",
   "Intended Audience :: Healthcare Industry",
   "Intended Audience :: Science/Research",
   "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
@@ -31,6 +32,7 @@ classifiers = [
 dependencies = [
   "anndata",
   "matplotlib",
+  "matplotlib-sankey",
   "networkx",
   "numpy",
   "pandas",
