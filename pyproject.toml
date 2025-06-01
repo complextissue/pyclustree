@@ -32,7 +32,7 @@ classifiers = [
 dependencies = [
   "anndata",
   "matplotlib",
-  "matplotlib-sankey",
+  "matplotlib-sankey>=0.3.1",
   "networkx",
   "numpy",
   "pandas",
