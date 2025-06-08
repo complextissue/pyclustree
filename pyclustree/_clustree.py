@@ -87,11 +87,6 @@ def clustree(
             to the child cluster. Defaults to False.
         show_cluster_keys (bool, optional): Whether to show the cluster keys on the left side of the plot.
             Defaults to True.
-        score_clustering (typing.Optional[typing.Union[typing.Literal["silhouette", "davies_bouldin", "calinski_harabasz"], collections.abc.Callable[[numpy.ndarray, numpy.ndarray], float]]], optional):
-            Add scoring method to evaluate clustering. Scores are added to the left side of the plot. You can
-            also provide your own scoring method by passing a callable which takes a matrix and an array of labels as
-            argument and returns a float.
-        score_basis (typing.Literal["X", "raw", "pca"]): Features to use as basis to evaluate clustering.
         graph_plot_kwargs (Optional[dict], optional): Additional keyword arguments to pass to `nx.draw`. Will override
             the default arguments. Defaults to None.
 
@@ -146,7 +141,7 @@ def clustree(
     # Create the Graph
     G: nx.Graph = nx.DiGraph()
 
-    layers: dict[str, list[str]] = {}
+    layers: dict[int, list[str]] = {}
 
     # Add the nodes and store cluster info directly in the graph
     for i, key in enumerate(cluster_keys):
@@ -165,7 +160,7 @@ def clustree(
                 cells=cluster_cells,
             )
 
-            layer_key = str(len(cluster_keys) - i)
+            layer_key = int(len(cluster_keys) - i)
             if layer_key not in layers:
                 layers[layer_key] = []
             layers[layer_key].append(node_name)
@@ -364,9 +359,9 @@ def clustree(
     elif show_colorbar and isinstance(node_colormap, list):
         warning("Colorbars are not supported when providing a list of colormaps. Ignoring the argument.")
 
-    # Calculate positions for cluster keys and scores
+    # Calculate positions for cluster keys
     need_level_positions = show_cluster_keys and scatter_reference is not None
-    y_positions_levels: NDArray[np.float64] | list[float]
+    y_positions_levels: NDArray[np.floating] | list[float]
     if need_level_positions:
         y_positions_levels = np.linspace(
             ax.get_ylim()[1],
@@ -374,7 +369,6 @@ def clustree(
             len(cluster_keys),
         )
 
-    # Show the name of the cluster key and scores
     if show_cluster_keys:
         x_min = ax.get_xlim()[0] if scatter_reference is None else ax.get_xlim()[1] + 2
 
