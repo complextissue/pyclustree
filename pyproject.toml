@@ -1,6 +1,5 @@
 [build-system]
 build-backend = "flit_core.buildapi"
-
 requires = [ "flit-core>=3.4,<4" ]
 
 [project]
@@ -26,6 +25,8 @@ classifiers = [
   "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "Typing :: Typed",
 ]
 dependencies = [
@@ -39,7 +40,6 @@ dependencies = [
   # for debug logging (referenced from the issue template)
   "session-info",
 ]
-
 optional-dependencies.dev = [
   "build>=1.4",
   "coverage",
@@ -74,21 +74,18 @@ optional-dependencies.dev = [
   "types-networkx",
 ]
 optional-dependencies.sklearn = [ "scikit-learn" ]
-
 # https://docs.pypi.org/project_metadata/#project-urls
 urls.Documentation = "https://pyclustree.readthedocs.io/"
 urls.Homepage = "https://github.com/complextissue/pyclustree"
 urls.Source = "https://github.com/complextissue/pyclustree"
 
-[tool.flit.sdist]
-exclude = [ "docs/*", "test/*" ]
+[tool.flit]
+sdist.exclude = [ "docs/*", "test/*" ]
 
 [tool.ruff]
 line-length = 120
 extend-include = [ "*.ipynb" ]
-
 format.docstring-code-format = true
-
 lint.select = [
   "B",      # flake8-bugbear
   "BLE",    # flake8-blind-except
@@ -122,33 +119,29 @@ lint.per-file-ignores."docs/*" = [ "I" ]
 lint.per-file-ignores."tests/*" = [ "D" ]
 lint.pydocstyle.convention = "google"
 
-[tool.pytest.ini_options]
-log_format = "%(asctime)s %(levelname)s %(message)s"
-log_date_format = "%Y-%m-%d %H:%M:%S"
-log_level = "WARN"
-log_cli = true
-testpaths = [ "tests" ]
-xfail_strict = true
-addopts = [
+[tool.pytest]
+ini_options.log_format = "%(asctime)s %(levelname)s %(message)s"
+ini_options.log_date_format = "%Y-%m-%d %H:%M:%S"
+ini_options.log_level = "WARN"
+ini_options.log_cli = true
+ini_options.testpaths = [ "tests" ]
+ini_options.xfail_strict = true
+ini_options.addopts = [
   "--import-mode=importlib", # allow using test files with same name
 ]
 
-[tool.coverage.run]
-source = [ "pyclustree" ]
-omit = [ "*/test/*" ]
-
-[tool.coverage.report]
-exclude_lines = [
-  "if __name__ == __main__:",
-  "raise",
-  "except",
-  "warning",
+[tool.coverage]
+run.omit = [ "*/test/*" ]
+run.source = [ "pyclustree" ]
+report.exclude_lines = [
   "def __repr__",
   "def __str__",
+  "except",
   "file_path = Path",
+  "if __name__ == __main__:",
+  "raise",
   "return None",
-] # don't complain if non-runnable code isn't run:
-ignore_errors = true
-
-[tool.coverage.html]
-directory = "docs/coverage_report"
+  "warning",
+]  # don't complain if non-runnable code isn't run:
+report.ignore_errors = true
+html.directory = "docs/coverage_report"

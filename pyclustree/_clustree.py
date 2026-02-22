@@ -139,22 +139,22 @@ def clustree(
     # Ensure all cluster keys are present in adata.obs
     assert all(key in adata.obs for key in cluster_keys), "All cluster keys should be present in adata.obs."
 
-    assert (
-        scatter_reference is None or scatter_reference in adata.obsm
-    ), "The provided scatter reference is not valid. It should be present in adata.obsm."
+    assert scatter_reference is None or scatter_reference in adata.obsm, (
+        "The provided scatter reference is not valid. It should be present in adata.obsm."
+    )
 
     if node_color_gene is not None:
         if scatter_reference is not None:
             raise ValueError("Currently, you cannot provide both a scatter reference and a node color gene.")
 
         if node_color_gene_use_raw and node_color_gene not in adata.obs.columns:
-            assert (
-                node_color_gene in adata.raw.var_names
-            ), "The provided gene should be present in the adata.raw.var_names."
+            assert node_color_gene in adata.raw.var_names, (
+                "The provided gene should be present in the adata.raw.var_names."
+            )
         else:
-            assert (
-                node_color_gene in adata.obs.columns or node_color_gene in adata.var_names
-            ), "The provided gene should be present in the adata.var_names/adata.raw.var_names or adata.obs."
+            assert node_color_gene in adata.obs.columns or node_color_gene in adata.var_names, (
+                "The provided gene should be present in the adata.var_names/adata.raw.var_names or adata.obs."
+            )
 
     # TODO: fix in matplotlib sankey
     # if isinstance(node_colormap, str):
@@ -240,12 +240,12 @@ def clustree(
         # Prepare node colors
         if isinstance(node_colormap, list):
             # Multiple colormaps for different levels
-            assert len(node_colormap) == len(
-                cluster_keys
-            ), "The length of the colormap list should match the number of cluster keys."
-            assert (
-                node_color_gene is None
-            ), "The node_color_gene argument is not supported when providing a list of colormaps."
+            assert len(node_colormap) == len(cluster_keys), (
+                "The length of the colormap list should match the number of cluster keys."
+            )
+            assert node_color_gene is None, (
+                "The node_color_gene argument is not supported when providing a list of colormaps."
+            )
 
             # Apply appropriate colormap to each node based on its level
             for node in G.nodes:
