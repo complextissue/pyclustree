@@ -5,7 +5,7 @@ requires = [ "flit-core>=3.4,<4" ]
 
 [project]
 name = "pyclustree"
-version = "0.4.0"
+version = "0.5.0"
 description = "Visualize cluster assignments at different resolutions"
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -14,7 +14,7 @@ maintainers = [
   { name = "Malte Kuehl", email = "malte.kuehl@clin.au.dk" },
 ]
 authors = [ { name = "Malte Hellmig" }, { name = "Malte Kuehl" } ]
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Framework :: Matplotlib",
@@ -24,7 +24,6 @@ classifiers = [
   "Natural Language :: English",
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Typing :: Typed",
@@ -32,7 +31,7 @@ classifiers = [
 dependencies = [
   "anndata",
   "matplotlib",
-  "matplotlib-sankey>=0.3.1",
+  "matplotlib-sankey>=0.3.2",
   "networkx",
   "numpy",
   "pandas",
@@ -42,6 +41,7 @@ dependencies = [
 ]
 
 optional-dependencies.dev = [
+  "build>=1.4",
   "coverage",
   "docutils>=0.8,!=0.18.*,!=0.19.*",
   "flit",

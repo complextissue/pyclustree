@@ -37,6 +37,14 @@ def clustree(
     show_cluster_keys: bool = True,
     graph_plot_kwargs: dict | None = None,
     transition_plot: Literal["network", "sankey"] = "network",
+    sankey_spacing: float = 0.01,
+    sankey_curve_type: Literal["curve3", "curve4", "line"] = "curve4",
+    sankey_ribbon_alpha: float = 0.2,
+    sankey_ribbon_color: str = "black",
+    sankey_show_legend: bool = False,
+    sankey_rel_column_width: float = 0.15,
+    sankey_annotate_columns: Literal["index", "weight", "weight_percent"] | None = "index",
+    sankey_annotate_columns_font_kwargs: dict | None = None,
 ) -> plt.Figure:
     """Create a hierarchical clustering tree visualization to compare different clustering resolutions.
 
@@ -102,6 +110,20 @@ def clustree(
         graph_plot_kwargs (Optional[dict], optional): Additional keyword arguments to pass to `nx.draw`. Will override
             the default arguments. Defaults to None.
         transition_plot (Literal["network", "sankey"], optional): Type of plot. Defaults to `"network"`.
+        sankey_spacing (float, optional): Spacing between column items in sankey plot. Range: 0.0 to 1.0.
+            Defaults to 0.01.
+        sankey_curve_type (Literal["curve3", "curve4", "line"], optional): Shape of flow ribbons in sankey plot.
+            Defaults to "curve4".
+        sankey_ribbon_alpha (float, optional): Transparency of flow ribbons in sankey plot. Range: 0.0 to 1.0.
+            Defaults to 0.2.
+        sankey_ribbon_color (str, optional): Color of flow ribbons in sankey plot. Defaults to "black".
+        sankey_show_legend (bool, optional): Whether to display legend in sankey plot. Defaults to False.
+        sankey_rel_column_width (float, optional): Relative width of column rectangles in sankey plot.
+            Range: 0 < value < 1. Defaults to 0.15.
+        sankey_annotate_columns (Literal["index", "weight", "weight_percent"] | None, optional):
+            Annotation type for sankey column rectangles. Defaults to "index".
+        sankey_annotate_columns_font_kwargs (Optional[dict], optional): Font customization for sankey annotations.
+            Defaults to None.
 
     Returns:
         plt.Figure: The matplotlib figure object of the clustree visualization.
@@ -417,7 +439,7 @@ def clustree(
                 )
 
     elif transition_plot == "sankey":
-        # add sankey plot
+        # Add sankey plot
 
         df_cluster_assignments = adata.obs[cluster_keys]
 
@@ -439,8 +461,15 @@ def clustree(
             )
 
         sankey_color = node_colormap
-
         gene_values = {}
+
+        # Calculate cluster sizes for column heights
+        column_item_totals = []
+        for key in cluster_keys:
+            cluster_sizes = {}
+            for cluster_name in unique_clusters[cluster_keys.index(key)]:
+                cluster_sizes[cluster_name] = int((df_cluster_assignments[key] == cluster_name).sum())
+            column_item_totals.append(cluster_sizes)
 
         if node_color_gene is not None:
             node_expr: dict[str, dict[str, float]] = {}
@@ -456,7 +485,6 @@ def clustree(
                     )
 
                     node_expr[key][cluster_key_name] = expr_mean
-
                     gene_values[key + cluster_key_name] = expr_mean
 
             norm = plt.Normalize(
@@ -481,12 +509,19 @@ def clustree(
 
         sankey(
             all_matrices,
-            # color=colormap_to_list(name=node_colormap, num=len(all_matrices) + 1),
             color=sankey_color,
             ax=ax,
-            spacing=0.01,
+            spacing=sankey_spacing,
             column_labels=cluster_keys,
-            annotate_columns="index",
+            annotate_columns=sankey_annotate_columns,
+            rel_column_width=sankey_rel_column_width,
+            curve_type=sankey_curve_type,
+            ribbon_alpha=sankey_ribbon_alpha,
+            ribbon_color=sankey_ribbon_color,
+            show_legend=sankey_show_legend,
+            annotate_columns_font_kwargs=sankey_annotate_columns_font_kwargs,
+            column_item_totals=column_item_totals,
+            show=False,
         )
 
     # Plot the colorbar
