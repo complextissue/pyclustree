@@ -18,6 +18,15 @@ Welcome to the `pyclustree` documentation!
    autoapi/pyclustree/index
 
 .. toctree::
+   :caption: Other projects
+   :maxdepth: 4
+   :glob:
+
+   spatiomic <https://spatiomic.org>
+   pytximport <https://pytximport.complextissue.com>
+   BioContextAI <https://biocontext.ai>
+
+.. toctree::
    :caption: Additional Information
    :maxdepth: 2
 

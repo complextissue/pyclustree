@@ -102,11 +102,6 @@ def clustree(
             to the child cluster. Defaults to False.
         show_cluster_keys (bool, optional): Whether to show the cluster keys on the left side of the plot.
             Defaults to True.
-        score_clustering (typing.Optional[typing.Union[typing.Literal["silhouette", "davies_bouldin", "calinski_harabasz"], collections.abc.Callable[[numpy.ndarray, numpy.ndarray], float]]], optional):
-            Add scoring method to evaluate clustering. Scores are added to the left side of the plot. You can
-            also provide your own scoring method by passing a callable which takes a matrix and an array of labels as
-            argument and returns a float.
-        score_basis (typing.Literal["X", "raw", "pca"]): Features to use as basis to evaluate clustering.
         graph_plot_kwargs (Optional[dict], optional): Additional keyword arguments to pass to `nx.draw`. Will override
             the default arguments. Defaults to None.
         transition_plot (Literal["network", "sankey"], optional): Type of plot. Defaults to `"network"`.
