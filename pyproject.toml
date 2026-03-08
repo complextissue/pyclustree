@@ -32,7 +32,6 @@ classifiers = [
 dependencies = [
   "anndata",
   "matplotlib",
-  "matplotlib-sankey>=0.3.2",
   "networkx",
   "numpy",
   "pandas",
@@ -71,6 +70,9 @@ optional-dependencies.dev = [
   "sphinxext-opengraph",
   "twine>=4.0.2",
   "types-networkx",
+]
+optional-dependencies.sankey = [
+  "matplotlib-sankey>=0.3.2",
 ]
 optional-dependencies.sklearn = [ "scikit-learn" ]
 # https://docs.pypi.org/project_metadata/#project-urls

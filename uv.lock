@@ -2238,7 +2238,6 @@ source = { editable = "." }
 dependencies = [
     { name = "anndata" },
     { name = "matplotlib" },
-    { name = "matplotlib-sankey" },
     { name = "networkx" },
     { name = "numpy" },
     { name = "pandas" },
@@ -2281,6 +2280,9 @@ dev = [
     { name = "twine" },
     { name = "types-networkx" },
 ]
+sankey = [
+    { name = "matplotlib-sankey" },
+]
 sklearn = [
     { name = "scikit-learn" },
 ]
@@ -2291,13 +2293,13 @@ requires-dist = [
     { name = "build", marker = "extra == 'dev'", specifier = ">=1.4" },
     { name = "coverage", marker = "extra == 'dev'" },
     { name = "docutils", marker = "extra == 'dev'", specifier = ">=0.8,!=0.18.*,!=0.19.*" },
-    { name = "flit", marker = "extra == 'dev'", specifier = ">=3.12.0" },
+    { name = "flit", marker = "extra == 'dev'", specifier = ">=3.12" },
     { name = "furo", marker = "extra == 'dev'" },
     { name = "ipykernel", marker = "extra == 'dev'" },
     { name = "ipython", marker = "extra == 'dev'" },
     { name = "ipywidgets", marker = "extra == 'dev'" },
     { name = "matplotlib" },
-    { name = "matplotlib-sankey", specifier = ">=0.3.2" },
+    { name = "matplotlib-sankey", marker = "extra == 'sankey'", specifier = ">=0.3.2" },
     { name = "myst-parser", marker = "extra == 'dev'" },
     { name = "nbsphinx", marker = "extra == 'dev'" },
     { name = "networkx" },
@@ -2326,7 +2328,7 @@ requires-dist = [
     { name = "twine", marker = "extra == 'dev'", specifier = ">=4.0.2" },
     { name = "types-networkx", marker = "extra == 'dev'" },
 ]
-provides-extras = ["dev", "sklearn"]
+provides-extras = ["dev", "sklearn", "sankey"]
 
 [[package]]
 name = "pycparser"

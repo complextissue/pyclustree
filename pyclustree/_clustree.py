@@ -9,7 +9,6 @@ import pandas as pd
 from anndata import AnnData
 from matplotlib import pyplot as plt
 from matplotlib.colors import Colormap
-from matplotlib_sankey import from_matrix, sankey
 
 # from matplotlib_sankey._colors import colormap_to_list
 from numpy.typing import NDArray
@@ -119,6 +118,13 @@ def clustree(
         sankey_kwargs = {}
 
     if transition_plot == "sankey":
+        try:
+            from matplotlib_sankey import from_matrix, sankey
+        except ImportError as imp_err:
+            raise ImportError(
+                "The 'matplotlib_sankey' library is required for sankey plots. Please install it with `pip install matplotlib-sankey` or use `pip install pyclustree[sankey]`."
+            ) from imp_err
+
         if scatter_reference is not None:
             warn(
                 message="'scatter_reference' not supported when using sankey plot. Argument is ignored.",
