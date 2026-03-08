@@ -1,6 +1,6 @@
 from collections.abc import Callable
 from logging import warning
-from typing import Literal
+from typing import Literal, TypedDict
 from warnings import warn
 
 import networkx as nx
@@ -15,6 +15,17 @@ from matplotlib_sankey import from_matrix, sankey
 from numpy.typing import NDArray
 
 from ._utils import order_unique_clusters, transition_matrix
+
+
+class SankeyKwargs(TypedDict):
+    spacing: float
+    curve_type: Literal["curve3", "curve4", "line"]
+    ribbon_alpha: float
+    ribbon_color: str
+    show_legend: bool
+    rel_column_width: float
+    annotate_columns: Literal["index", "weight", "weight_percent"] | None
+    annotate_columns_font_kwargs: dict | None
 
 
 def clustree(
@@ -37,14 +48,7 @@ def clustree(
     show_cluster_keys: bool = True,
     graph_plot_kwargs: dict | None = None,
     transition_plot: Literal["network", "sankey"] = "network",
-    sankey_spacing: float = 0.01,
-    sankey_curve_type: Literal["curve3", "curve4", "line"] = "curve4",
-    sankey_ribbon_alpha: float = 0.2,
-    sankey_ribbon_color: str = "black",
-    sankey_show_legend: bool = False,
-    sankey_rel_column_width: float = 0.15,
-    sankey_annotate_columns: Literal["index", "weight", "weight_percent"] | None = "index",
-    sankey_annotate_columns_font_kwargs: dict | None = None,
+    sankey_kwargs: SankeyKwargs | None = None,
 ) -> plt.Figure:
     """Create a hierarchical clustering tree visualization to compare different clustering resolutions.
 
@@ -105,24 +109,15 @@ def clustree(
         graph_plot_kwargs (Optional[dict], optional): Additional keyword arguments to pass to `nx.draw`. Will override
             the default arguments. Defaults to None.
         transition_plot (Literal["network", "sankey"], optional): Type of plot. Defaults to `"network"`.
-        sankey_spacing (float, optional): Spacing between column items in sankey plot. Range: 0.0 to 1.0.
-            Defaults to 0.01.
-        sankey_curve_type (Literal["curve3", "curve4", "line"], optional): Shape of flow ribbons in sankey plot.
-            Defaults to "curve4".
-        sankey_ribbon_alpha (float, optional): Transparency of flow ribbons in sankey plot. Range: 0.0 to 1.0.
-            Defaults to 0.2.
-        sankey_ribbon_color (str, optional): Color of flow ribbons in sankey plot. Defaults to "black".
-        sankey_show_legend (bool, optional): Whether to display legend in sankey plot. Defaults to False.
-        sankey_rel_column_width (float, optional): Relative width of column rectangles in sankey plot.
-            Range: 0 < value < 1. Defaults to 0.15.
-        sankey_annotate_columns (Literal["index", "weight", "weight_percent"] | None, optional):
-            Annotation type for sankey column rectangles. Defaults to "index".
-        sankey_annotate_columns_font_kwargs (Optional[dict], optional): Font customization for sankey annotations.
+        sankey_kwargs (SankeyKwargs, optional): Additional keyword arguments for sankey plot customization.
             Defaults to None.
 
     Returns:
         plt.Figure: The matplotlib figure object of the clustree visualization.
     """
+    if sankey_kwargs is None:
+        sankey_kwargs = {}
+
     if transition_plot == "sankey":
         if scatter_reference is not None:
             warn(
@@ -506,15 +501,15 @@ def clustree(
             all_matrices,
             color=sankey_color,
             ax=ax,
-            spacing=sankey_spacing,
+            spacing=sankey_kwargs.get("spacing", 0.0),
             column_labels=cluster_keys,
-            annotate_columns=sankey_annotate_columns,
-            rel_column_width=sankey_rel_column_width,
-            curve_type=sankey_curve_type,
-            ribbon_alpha=sankey_ribbon_alpha,
-            ribbon_color=sankey_ribbon_color,
-            show_legend=sankey_show_legend,
-            annotate_columns_font_kwargs=sankey_annotate_columns_font_kwargs,
+            annotate_columns=sankey_kwargs.get("annotate_columns", "index"),
+            rel_column_width=sankey_kwargs.get("rel_column_width", 0.15),
+            curve_type=sankey_kwargs.get("curve_type", "curve4"),
+            ribbon_alpha=sankey_kwargs.get("ribbon_alpha", 0.2),
+            ribbon_color=sankey_kwargs.get("ribbon_color", "black"),
+            show_legend=sankey_kwargs.get("show_legend", False),
+            annotate_columns_font_kwargs=sankey_kwargs.get("annotate_columns_font_kwargs", None),
             column_item_totals=column_item_totals,
             show=False,
         )

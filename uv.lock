@@ -1308,6 +1308,31 @@ wheels = [
 ]
 
 [[package]]
+name = "leidenalg"
+version = "0.11.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "igraph" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/5d/a5/853e93441aed7f82b0389f86f37e19413e817ba0c54cc790895935256968/leidenalg-0.11.0.tar.gz", hash = "sha256:f454be96bbc8089ea2a90ca853d8d389ab646de964a03bd58417f8b29ff8ef5d", size = 452850, upload-time = "2025-10-31T17:14:48.684Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/28/a9/4ab4e244215db0c8b626e4bed0d3e0fbd191c52d2d5f5cb9d160139ecc7e/leidenalg-0.11.0-cp38-abi3-macosx_10_9_x86_64.whl", hash = "sha256:5607589050bfc1926e657b4d8a3b5341fe1eb81018c22cf4a3d3a39e368d1fcb", size = 2256514, upload-time = "2025-10-31T17:14:27.574Z" },
+    { url = "https://files.pythonhosted.org/packages/98/f4/98db342d603671ae0a233f0a624939a47161044a2716cbd62a50440a1132/leidenalg-0.11.0-cp38-abi3-macosx_11_0_arm64.whl", hash = "sha256:9b5781876b1f1faed72a4f9926ff52de286843556b9d6791fe25a2acb33b7a5c", size = 1926003, upload-time = "2025-10-31T17:14:29.521Z" },
+    { url = "https://files.pythonhosted.org/packages/9b/38/fd6ac21af10b12828b472eada4fce0edf2a212581238ad0c8d1afebc6f98/leidenalg-0.11.0-cp38-abi3-manylinux_2_26_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:a80f49477f8e793f27d8e08949177f19e3834cd878af50a662b4f87335d06549", size = 2545535, upload-time = "2025-10-31T17:14:31.102Z" },
+    { url = "https://files.pythonhosted.org/packages/77/87/b087584750a788535b4a8d56ddeb82a175d32b472aa5338a4e2cc593a42c/leidenalg-0.11.0-cp38-abi3-manylinux_2_26_i686.manylinux_2_28_i686.whl", hash = "sha256:2143be3e80485584ccbdf927323fce65345da17facd0f8b438f11015f5dc6c27", size = 2845029, upload-time = "2025-10-31T17:14:32.815Z" },
+    { url = "https://files.pythonhosted.org/packages/b0/a4/a89e2ce16a580f7bea066ed49364f0b3e04a6412f0c3692975bee8515141/leidenalg-0.11.0-cp38-abi3-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:571a0934f831a69442d82889d319bdba93de924bd9e09b720cd8cbe6fdc08c17", size = 2738084, upload-time = "2025-10-31T17:14:35.246Z" },
+    { url = "https://files.pythonhosted.org/packages/e8/fe/8923cac6cd7c9e0ac5f38aaa69a4744c93d025575763d05f7a3baae8020d/leidenalg-0.11.0-cp38-abi3-musllinux_1_2_i686.whl", hash = "sha256:aec03e7178b19102dd271b453a39b9865cf283b4113151ba60514e5681046294", size = 4070307, upload-time = "2025-10-31T17:14:36.796Z" },
+    { url = "https://files.pythonhosted.org/packages/fe/94/beaab5ee9968f9389f705532c31ffb868bad8a5ce68fb699ddde5ddc5409/leidenalg-0.11.0-cp38-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:310b9269a11fd1e960590c1a2b6ff685a2cc42aa3234ce67bc2a623ab61f26a9", size = 3797863, upload-time = "2025-10-31T17:14:38.124Z" },
+    { url = "https://files.pythonhosted.org/packages/6e/8e/8caf4ba38fd7d8e6197348b348a4ab666b1b3117225ea2f0934a98a93176/leidenalg-0.11.0-cp38-abi3-win32.whl", hash = "sha256:5ea4cd7ee054540112b28f7e2d64658dcccd59f61a5d6a08a41df808645f96e9", size = 1643351, upload-time = "2025-10-31T17:14:39.385Z" },
+    { url = "https://files.pythonhosted.org/packages/47/15/7d459a8e2a43f17c1db129b997b7bb7aa7f000a0967bab87c28b8c5cf448/leidenalg-0.11.0-cp38-abi3-win_amd64.whl", hash = "sha256:5e789c0960008d185413344a402d0587580c441644d4d20bf57c96f25d4d1710", size = 1990321, upload-time = "2025-10-31T17:14:40.892Z" },
+    { url = "https://files.pythonhosted.org/packages/b2/01/f6bdfb489ce86cb11f7b5428bb8c3cff751436fff4e12c99f3b5f59d622e/leidenalg-0.11.0-pp311-pypy311_pp73-macosx_10_15_x86_64.whl", hash = "sha256:aa9b3bb5e75c5120b57cb8a3ba176610853359a9f5e787ecd6ba7e85c61f4fdc", size = 2254690, upload-time = "2025-10-31T17:14:42.153Z" },
+    { url = "https://files.pythonhosted.org/packages/9b/50/ffad5f00e995ea064d1345867f6aa3534ebfb58e361309e088a12ef278d1/leidenalg-0.11.0-pp311-pypy311_pp73-macosx_11_0_arm64.whl", hash = "sha256:bed72262f181774de8425d6951c0e9c1d9c3d9bc64e030993e4215d6ab67933b", size = 1924396, upload-time = "2025-10-31T17:14:43.544Z" },
+    { url = "https://files.pythonhosted.org/packages/9d/7c/7683c87e9d0bf70519a0d6cdbb27363b3520a4d5edd9c5f59181e393e2ff/leidenalg-0.11.0-pp311-pypy311_pp73-manylinux_2_26_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:9c1672eb4b24c2c484c0f4d2225267a456751f4624ac99619fed4fb9e4a31049", size = 2379529, upload-time = "2025-10-31T17:14:44.67Z" },
+    { url = "https://files.pythonhosted.org/packages/b8/0d/0560646fe75f6d161006cb6f164ef7d25096b9d59d68e836bce931ec8724/leidenalg-0.11.0-pp311-pypy311_pp73-manylinux_2_26_i686.manylinux_2_28_i686.whl", hash = "sha256:3d9c74f9c3d97d1daec5cc9f43b56a62bb3f40d5fef9f2b5defd8d715bfb5cdd", size = 2683317, upload-time = "2025-10-31T17:14:46.03Z" },
+    { url = "https://files.pythonhosted.org/packages/79/b9/d84d6225d79fed4fee19faef49e8b8fa58b70fcf55de5061bb1adf602eaa/leidenalg-0.11.0-pp311-pypy311_pp73-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:023e97e4c96573e89fdea876da663e38694f6fa91e2c85e98455101409381d88", size = 2570109, upload-time = "2025-10-31T17:14:47.585Z" },
+]
+
+[[package]]
 name = "llvmlite"
 version = "0.46.0"
 source = { registry = "https://pypi.org/simple" }
@@ -2238,9 +2263,8 @@ dev = [
     { name = "pandoc" },
     { name = "pre-commit" },
     { name = "pytest" },
-    { name = "python-igraph" },
-    { name = "scanpy", version = "1.11.5", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
-    { name = "scanpy", version = "1.12", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
+    { name = "scanpy", version = "1.11.5", source = { registry = "https://pypi.org/simple" }, extra = ["leiden"], marker = "python_full_version < '3.12'" },
+    { name = "scanpy", version = "1.12", source = { registry = "https://pypi.org/simple" }, extra = ["leiden"], marker = "python_full_version >= '3.12'" },
     { name = "setuptools" },
     { name = "sphinx", version = "9.0.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
     { name = "sphinx", version = "9.1.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
@@ -2264,10 +2288,10 @@ sklearn = [
 [package.metadata]
 requires-dist = [
     { name = "anndata" },
-    { name = "build", marker = "extra == 'dev'", specifier = ">=1.4.0" },
+    { name = "build", marker = "extra == 'dev'", specifier = ">=1.4" },
     { name = "coverage", marker = "extra == 'dev'" },
     { name = "docutils", marker = "extra == 'dev'", specifier = ">=0.8,!=0.18.*,!=0.19.*" },
-    { name = "flit", marker = "extra == 'dev'" },
+    { name = "flit", marker = "extra == 'dev'", specifier = ">=3.12.0" },
     { name = "furo", marker = "extra == 'dev'" },
     { name = "ipykernel", marker = "extra == 'dev'" },
     { name = "ipython", marker = "extra == 'dev'" },
@@ -2284,8 +2308,7 @@ requires-dist = [
     { name = "pandoc", marker = "extra == 'dev'" },
     { name = "pre-commit", marker = "extra == 'dev'" },
     { name = "pytest", marker = "extra == 'dev'" },
-    { name = "python-igraph", marker = "extra == 'dev'" },
-    { name = "scanpy", marker = "extra == 'dev'" },
+    { name = "scanpy", extras = ["leiden"], marker = "extra == 'dev'", specifier = ">=1.11.5" },
     { name = "scikit-learn", marker = "extra == 'sklearn'" },
     { name = "seaborn" },
     { name = "session-info" },
@@ -2403,18 +2426,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/66/c0/0c8b6ad9f17a802ee498c46e004a0eb49bc148f2fd230864601a86dcf6db/python-dateutil-2.9.0.post0.tar.gz", hash = "sha256:37dd54208da7e1cd875388217d5e00ebd4179249f90fb72437e91a35459a0ad3", size = 342432, upload-time = "2024-03-01T18:36:20.211Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/ec/57/56b9bcc3c9c6a792fcbaf139543cee77261f3651ca9da0c93f5c1221264b/python_dateutil-2.9.0.post0-py2.py3-none-any.whl", hash = "sha256:a8b2bc7bffae282281c8140a97d3aa9c14da0b136dfe83f850eea9a5f7470427", size = 229892, upload-time = "2024-03-01T18:36:18.57Z" },
-]
-
-[[package]]
-name = "python-igraph"
-version = "1.0.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "igraph" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/2b/b6/3c1476ec6bf06348ecea1d76af6c6b3a024dddbcd2de120d3a0de1eab29b/python_igraph-1.0.0.tar.gz", hash = "sha256:6da7ac4e9f6a9cf03734798bed6fb082bb9274f2ae288f6099121f0332803018", size = 9726, upload-time = "2025-10-23T12:28:36.266Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/31/5f/567fa047076d32d321bdafa248905a7186d2acee4916b046b11417af10d9/python_igraph-1.0.0-py3-none-any.whl", hash = "sha256:b0bb8d91cce2a1e0550fe45f9ec925bcd04152dfb5be3fa822b9f5f36eb3f380", size = 9157, upload-time = "2025-10-23T12:28:33.515Z" },
 ]
 
 [[package]]
@@ -2796,6 +2807,12 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/32/e9/c1d43543da87cd27e8e2a74db85cf0b6c5cff2d5f04a86bd584d2fbc2bb0/scanpy-1.11.5-py3-none-any.whl", hash = "sha256:fcd383ddcf7acbf7c0ca232c25ad51b00aec9f8d2f7c8954b8c6ee0962257166", size = 2097836, upload-time = "2025-10-21T08:24:41.741Z" },
 ]
 
+[package.optional-dependencies]
+leiden = [
+    { name = "igraph", marker = "python_full_version < '3.12'" },
+    { name = "leidenalg", marker = "python_full_version < '3.12'" },
+]
+
 [[package]]
 name = "scanpy"
 version = "1.12"
@@ -2830,6 +2847,12 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/0e/3e/180968c66be48f9dab747330beb2056df5bb7a115a56d3700da149c48916/scanpy-1.12.tar.gz", hash = "sha256:8139840bb948ce0aa0798c9b8b88c1df4f06c27641a792f0995d39cd4dcf858a", size = 14418589, upload-time = "2026-01-23T13:25:23.414Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/44/f0/000ac705a3d5b8744c6eabfce6b413b131829542ffec05020b1e931ffed4/scanpy-1.12-py3-none-any.whl", hash = "sha256:0b89827f9ba9fea8fce5a49b311e9ce34a23f922b7d8506fa845a2dc92ef0bfe", size = 2148747, upload-time = "2026-01-23T13:25:20.84Z" },
+]
+
+[package.optional-dependencies]
+leiden = [
+    { name = "igraph", marker = "python_full_version >= '3.12'" },
+    { name = "leidenalg", marker = "python_full_version >= '3.12'" },
 ]
 
 [[package]]

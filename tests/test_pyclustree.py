@@ -168,7 +168,7 @@ def test_sankey_parameters():
             adata,
             cluster_keys,
             transition_plot="sankey",
-            sankey_curve_type=curve_type,
+            sankey_kwargs={"curve_type": curve_type},
         )
         assert isinstance(fig, plt.Figure), f"Sankey plot with curve_type={curve_type} should work."
 
@@ -177,7 +177,7 @@ def test_sankey_parameters():
         adata,
         cluster_keys,
         transition_plot="sankey",
-        sankey_spacing=0.05,
+        sankey_kwargs={"spacing": 0.05},
     )
     assert isinstance(fig, plt.Figure), "Sankey plot with custom spacing should work."
 
@@ -186,8 +186,7 @@ def test_sankey_parameters():
         adata,
         cluster_keys,
         transition_plot="sankey",
-        sankey_ribbon_alpha=0.5,
-        sankey_ribbon_color="blue",
+        sankey_kwargs={"ribbon_alpha": 0.5, "ribbon_color": "blue"},
     )
     assert isinstance(fig, plt.Figure), "Sankey plot with custom ribbon parameters should work."
 
@@ -197,7 +196,7 @@ def test_sankey_parameters():
             adata,
             cluster_keys,
             transition_plot="sankey",
-            sankey_annotate_columns=annotate_type,
+            sankey_kwargs={"annotate_columns": annotate_type},
         )
         assert isinstance(fig, plt.Figure), f"Sankey plot with annotate_columns={annotate_type} should work."
 
@@ -206,7 +205,7 @@ def test_sankey_parameters():
         adata,
         cluster_keys,
         transition_plot="sankey",
-        sankey_rel_column_width=0.25,
+        sankey_kwargs={"rel_column_width": 0.25},
     )
     assert isinstance(fig, plt.Figure), "Sankey plot with custom column width should work."
 
@@ -215,7 +214,7 @@ def test_sankey_parameters():
         adata,
         cluster_keys,
         transition_plot="sankey",
-        sankey_show_legend=True,
+        sankey_kwargs={"show_legend": True},
     )
     assert isinstance(fig, plt.Figure), "Sankey plot with legend should work."
 
@@ -224,7 +223,7 @@ def test_sankey_parameters():
         adata,
         cluster_keys,
         transition_plot="sankey",
-        show_colorbar=True,
+        sankey_kwargs={"show_colorbar": True},
     )
     assert isinstance(fig, plt.Figure), "Sankey plot with colorbar should work."
 
