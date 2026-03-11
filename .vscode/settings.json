@@ -28,7 +28,12 @@
     "notebook.cellFocusIndicator": "gutter",
     "notebook.lineNumbers": "on",
     "files.watcherExclude": {
-        "**/.venv/**": true
+        "**/.venv/**": true,
+        "**/__pycache__/**": true,
+        "**/.pytest_cache/**": true,
+        "**/.ruffle_cache/**": true,
+        "**/data/**": true,
+        "**/dist/**": true
     },
     "githubPullRequests.ignoredPullRequestBranches": ["main"]
 }
