@@ -129,7 +129,7 @@ def clustree(
             warn(
                 message="'scatter_reference' not supported when using sankey plot. Argument is ignored.",
                 category=UserWarning,
-                stacklevel=1,
+                stacklevel=2,
             )
 
     # Ensure all cluster keys are present in adata.obs
